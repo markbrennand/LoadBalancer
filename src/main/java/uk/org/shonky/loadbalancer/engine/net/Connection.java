@@ -1,16 +1,22 @@
-package uk.org.shonky.loadbalancer.net;
+package uk.org.shonky.loadbalancer.engine.net;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
+
 import uk.org.shonky.loadbalancer.util.DeliveryQueue;
+
+import static java.nio.channels.SelectionKey.OP_WRITE;
+import static java.nio.channels.SelectionKey.OP_CONNECT;
 
 public class Connection {
     private DeliveryQueue<ByteBuffer> queue;
     private SocketChannel channel;
+    private SelectionKey key;
 
     public Connection(SocketChannel channel, int maxQueueSize) {
-        this.queue = queue;
         this.channel = channel;
         this.queue = new DeliveryQueue<ByteBuffer>(maxQueueSize);
     }
@@ -33,6 +39,14 @@ public class Connection {
         }
 
         return !queue.isEmpty();
+    }
+
+    public void register(Selector selector) throws IOException {
+        this.key = channel.register(selector, channel.isConnected() ? 0 : OP_CONNECT, this);
+    }
+
+    public void enableTransmit(boolean enable) {
+        key.interestOps(enable ? OP_WRITE : 0);
     }
 
     public void close() throws IOException {
