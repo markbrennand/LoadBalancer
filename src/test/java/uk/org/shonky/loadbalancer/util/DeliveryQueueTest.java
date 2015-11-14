@@ -11,7 +11,6 @@ public class DeliveryQueueTest {
     private final static Integer FIVE = new Integer(5);
     private final static Integer SIX = new Integer(6);
 
-
     @Before
     public void setUp() {}
 
