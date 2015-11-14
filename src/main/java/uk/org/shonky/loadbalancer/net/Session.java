@@ -1,4 +1,4 @@
-package com.nanthealth.uk.tools.loadbalancer.net;
+package uk.org.shonky.loadbalancer.net;
 
 import java.io.IOException;
 import java.nio.channels.Selector;

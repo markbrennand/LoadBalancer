@@ -1,4 +1,4 @@
-package com.nanthealth.uk.tools.loadbalancer.util;
+package uk.org.shonky.loadbalancer.util;
 
 public class DeliveryQueueEmptyException extends RuntimeException {
 

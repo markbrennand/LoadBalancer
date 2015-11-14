@@ -1,9 +1,9 @@
-package com.nanthealth.uk.tools.loadbalancer.net;
+package uk.org.shonky.loadbalancer.net;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import com.nanthealth.uk.tools.loadbalancer.util.DeliveryQueue;
+import uk.org.shonky.loadbalancer.util.DeliveryQueue;
 
 public class Connection {
     private DeliveryQueue<ByteBuffer> queue;
