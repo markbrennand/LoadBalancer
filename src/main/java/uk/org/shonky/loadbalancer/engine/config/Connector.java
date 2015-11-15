@@ -1,10 +1,10 @@
 package uk.org.shonky.loadbalancer.engine.config;
 
-import java.util.Properties;
+import java.net.InetAddress;
 
 public interface Connector {
-    public void configure(Properties configuration);
+    public int getListeningPort();
+    public InetAddress getListeningAddress();
     public Endpoint nextEndpoint();
     public void endpointClosed(Endpoint endpoint);
-    public ConfigurationItem[] getConfigurationItems();
 }

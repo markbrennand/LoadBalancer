@@ -20,7 +20,7 @@ public class Session {
     private Connection sourceConnection;
     private Connection destinationConnection;
 
-    public Session(SocketChannel source, Connector connector, Selector selector,int maxQueueSize,
+    public Session(SocketChannel source, Connector connector, Selector selector, int maxQueueSize,
                    Allocator<ByteBuffer> allocator)
             throws IOException
     {
@@ -75,9 +75,9 @@ public class Session {
 
     public void enableRead(boolean source, boolean enabled) {
         if (source) {
-            sourceConnection.enableRead(enabled);
+            sourceConnection.enableReceive(enabled);
         } else {
-            destinationConnection.enableRead(enabled);
+            destinationConnection.enableReceive(enabled);
         }
     }
 

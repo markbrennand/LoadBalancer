@@ -77,7 +77,7 @@ public class Connection {
         }
     }
 
-    public void enableRead(boolean enabled) {
+    public void enableReceive(boolean enabled) {
         if (enabled) {
             key.interestOps(key.interestOps() | OP_READ);
         } else {
@@ -98,7 +98,6 @@ public class Connection {
                 channel.close();
                 closed = true;
                 return;
-
             }
         }
 
@@ -132,6 +131,7 @@ public class Connection {
             logger.trace(tag + " queue is empty: " + queue.isEmpty());
         }
 
+        enableReceive(queue.isEmpty());
         enableTransmit(!queue.isEmpty());
     }
 
