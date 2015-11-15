@@ -17,7 +17,7 @@ import static java.nio.channels.SelectionKey.OP_READ;
 import static java.nio.channels.SelectionKey.OP_WRITE;
 import static java.nio.channels.SelectionKey.OP_CONNECT;
 
-public class Connection {
+public class Connection implements Processor {
     private static final Logger logger = Logger.getLogger(Connection.class);
 
     private Session session;
@@ -30,8 +30,9 @@ public class Connection {
     private boolean closing;
     private boolean closed;
 
-    public Connection(String tag, Session session, boolean source, SocketChannel channel, int maxQueueSize,
-                      Allocator<ByteBuffer> allocator)
+    public Connection(String tag, Session session, boolean source, Selector selector, SocketChannel channe,
+                      int maxQueueSize, Allocator<ByteBuffer> allocator)
+            throws IOException
     {
         if (logger.isTraceEnabled()) {
             logger.trace("Creating connection with tag '" + tag + "', channel '" + channel + "'");
@@ -42,10 +43,16 @@ public class Connection {
         this.source = source;
         this.channel = checkNotNull(channel);
         this.queue = new DeliveryQueue<ByteBuffer>(maxQueueSize);
-    }
 
-    public void estabished() throws IOException {
-        channel.finishConnect();
+        if (channel.isConnected()) {
+            this.key = channel.register(selector, OP_READ, this);
+        } else {
+            this.key = channel.register(selector, OP_CONNECT, this);
+        }
+
+        if (logger.isInfoEnabled()) {
+            logger.info(tag + " registered with " + selector + ", channel connected: " + channel.isConnected());
+        }
     }
 
     public void append(ByteBuffer buffer) {
@@ -57,7 +64,64 @@ public class Connection {
         enableTransmit(true);
     }
 
-    public void forward() throws IOException {
+    public void enableReceive(boolean enabled) {
+        if (enabled) {
+            key.interestOps(key.interestOps() | OP_READ);
+        } else {
+            key.interestOps(key.interestOps() & OP_WRITE);
+        }
+    }
+
+    public void close() {
+        closing = true;
+    }
+
+    public void terminate() {
+        if (closed) {
+            return;
+        }
+
+        while (!queue.isEmpty()) {
+            allocator.reuse(queue.pop());
+        }
+
+        if (key != null) {
+            key.cancel();
+        }
+
+        try {
+            channel.close();
+            if (logger.isInfoEnabled()) {
+                logger.info(tag + " channel terminated");
+            }
+        } catch(IOException ioe) {
+            logger.warn(tag + " termination failure", ioe);
+        }
+    }
+
+    @Override
+    public Session process(Selector selector, SocketChannel channel) throws IOException{
+        if (key.isReadable()) {
+            receive();
+        }
+
+        if (key.isWritable()) {
+            transmit();
+        }
+
+        if (key.isConnectable()) {
+            connected();
+        }
+
+        return session;
+    }
+
+    private void connected() throws IOException {
+        channel.finishConnect();
+        key.interestOps(OP_READ);
+    }
+
+    private void receive() throws IOException {
         ByteBuffer buffer = allocator.create();
         int count = channel.read(buffer);
 
@@ -72,20 +136,25 @@ public class Connection {
             }
             channel.close();
             closed = true;
+            session.closing(!source);
         } else {
             session.append(!source, buffer);
         }
     }
 
-    public void enableReceive(boolean enabled) {
+    private void enableTransmit(boolean enabled) {
         if (enabled) {
-            key.interestOps(key.interestOps() | OP_READ);
+            key.interestOps(key.interestOps() | OP_WRITE);
         } else {
-            key.interestOps(key.interestOps() & OP_WRITE);
+            key.interestOps(key.interestOps() & OP_READ);
+        }
+
+        if (logger.isTraceEnabled()) {
+            logger.trace(tag + " transmit enabled: " + enabled);
         }
     }
 
-    public void transmit() throws IOException {
+    private void transmit() throws IOException {
         if (closing) {
             if (logger.isTraceEnabled()) {
                 logger.trace(tag + " closing");
@@ -132,48 +201,6 @@ public class Connection {
         }
 
         enableReceive(queue.isEmpty());
-        enableTransmit(!queue.isEmpty());
-    }
-
-    public void register(Selector selector) throws IOException {
-        this.key = channel.register(selector, channel.isConnected() ? 0 : OP_CONNECT, this);
-        if (logger.isInfoEnabled()) {
-            logger.info(tag + " registered with " + selector + ", channel connected: " + channel.isConnected());
-        }
-    }
-
-    public void enableTransmit(boolean enabled) {
-        if (enabled) {
-            key.interestOps(key.interestOps() | OP_WRITE);
-        } else {
-            key.interestOps(key.interestOps() & OP_READ);
-        }
-
-        if (logger.isTraceEnabled()) {
-            logger.trace(tag + " transmit enabled: " + enabled);
-        }
-    }
-
-    public void terminate() {
-        if (closed) {
-            return;
-        }
-
-        while (!queue.isEmpty()) {
-            allocator.reuse(queue.pop());
-        }
-
-        if (key != null) {
-            key.cancel();
-        }
-
-        try {
-            channel.close();
-            if (logger.isInfoEnabled()) {
-                logger.info(tag + " channel terminated");
-            }
-        } catch(IOException ioe) {
-            logger.warn(tag + " termination failure", ioe);
-        }
+        enableTransmit(!queue.isEmpty() || closing);
     }
 }

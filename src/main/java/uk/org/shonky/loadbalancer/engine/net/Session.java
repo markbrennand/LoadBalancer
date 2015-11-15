@@ -6,11 +6,9 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
-import uk.org.shonky.loadbalancer.engine.config.Connector;
 import uk.org.shonky.loadbalancer.util.Allocator;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
-
-import static java.nio.channels.SelectionKey.OP_READ;
+import uk.org.shonky.loadbalancer.engine.config.Connector;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -47,6 +45,7 @@ public class Session {
                 new StringBuffer(from).append(" -> ").append(to).toString(),
                 this,
                 true,
+                selector,
                 destinationChannel,
                 maxQueueSize,
                 allocator);
@@ -55,14 +54,10 @@ public class Session {
                 new StringBuffer(from).append(" <- ").append(to).toString(),
                 this,
                 false,
+                selector,
                 source,
                 maxQueueSize,
                 allocator);
-
-        source.register(selector, OP_READ, destinationConnection);
-        destinationChannel.register(selector, OP_READ, sourceConnection);
-        sourceConnection.register(selector);
-        destinationConnection.register(selector);
     }
 
     public void append(boolean source, ByteBuffer buffer) {
@@ -78,6 +73,14 @@ public class Session {
             sourceConnection.enableReceive(enabled);
         } else {
             destinationConnection.enableReceive(enabled);
+        }
+    }
+
+    public void closing(boolean source) {
+        if (source) {
+            sourceConnection.close();
+        } else {
+            destinationConnection.close();
         }
     }
 

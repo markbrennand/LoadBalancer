@@ -10,6 +10,7 @@ import java.nio.channels.ServerSocketChannel;
 
 import org.apache.log4j.Logger;
 
+import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.util.Allocator;
 import uk.org.shonky.loadbalancer.engine.config.Connector;
 
@@ -17,7 +18,7 @@ import static java.nio.channels.SelectionKey.OP_ACCEPT;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Listener {
+public class Listener implements Processor {
     private static final Logger logger = Logger.getLogger(Listener.class);
 
     private ServerSocketChannel channel;
@@ -26,21 +27,17 @@ public class Listener {
     private SelectionKey key;
     private int maxQueueSize;
 
-    public Listener(Connector connector, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
+    public Listener(Service service, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
         if (logger.isInfoEnabled()) {
-            logger.info("Creating listener for " + connector.getListeningAddress().getHostAddress() +
-                    ", port " + connector.getListeningPort() + ", with connector " + connector);
+            logger.info("Creating listener for " + service.getListeningAddress().getHostAddress() +
+                    ", port " + service.getListeningPort());
         }
-        this.connector = checkNotNull(connector);
+        this.connector = checkNotNull(service.getConnector());
         channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
-        channel.bind(new InetSocketAddress(checkNotNull(connector.getListeningAddress()), connector.getListeningPort()));
+        channel.bind(new InetSocketAddress(checkNotNull(service.getListeningAddress()), service.getListeningPort()));
         this.maxQueueSize = maxQueueSize;
-        this.allocator = allocator;
-    }
-
-    public Session accepted(SocketChannel channel, Selector selector) throws IOException {
-        return new Session(channel, connector, selector, maxQueueSize, allocator);
+        this.allocator = checkNotNull(allocator);
     }
 
     public void register(Selector selector) throws IOException {
@@ -54,6 +51,15 @@ public class Listener {
         if (key != null) {
             key.cancel();
             key = null;
+        }
+    }
+
+    @Override
+    public Session process(Selector selector, SocketChannel channel) throws Exception {
+        if (key.isAcceptable()) {
+            return new Session(channel, connector, selector, maxQueueSize, allocator);
+        } else {
+            throw new ConnectionException("Unexpected operation detected on listener");
         }
     }
 }
