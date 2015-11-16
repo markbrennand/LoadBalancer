@@ -1,8 +1,9 @@
-package uk.org.shonky.loadbalancer.util;
+package uk.org.shonky.loadbalancer.util.impl;
 
 import java.nio.ByteBuffer;
 
 import org.junit.*;
+import uk.org.shonky.loadbalancer.util.impl.SimpleByteBufferAllocator;
 
 import static org.junit.Assert.*;
 

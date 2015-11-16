@@ -1,4 +1,6 @@
-package uk.org.shonky.loadbalancer.engine.config;
+package uk.org.shonky.loadbalancer.engine.policy;
+
+import uk.org.shonky.loadbalancer.engine.config.ConfigurationItem;
 
 import java.util.Properties;
 

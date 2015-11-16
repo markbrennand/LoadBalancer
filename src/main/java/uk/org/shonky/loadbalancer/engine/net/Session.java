@@ -8,7 +8,7 @@ import java.nio.channels.SocketChannel;
 
 import uk.org.shonky.loadbalancer.util.Allocator;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
-import uk.org.shonky.loadbalancer.engine.config.Connector;
+import uk.org.shonky.loadbalancer.engine.policy.Connector;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

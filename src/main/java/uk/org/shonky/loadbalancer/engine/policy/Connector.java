@@ -1,6 +1,6 @@
-package uk.org.shonky.loadbalancer.engine.config;
+package uk.org.shonky.loadbalancer.engine.policy;
 
-import java.net.InetAddress;
+import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 
 public interface Connector {
     public Endpoint nextEndpoint();

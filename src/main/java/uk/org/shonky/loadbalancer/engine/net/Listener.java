@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 
 import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.util.Allocator;
-import uk.org.shonky.loadbalancer.engine.config.Connector;
+import uk.org.shonky.loadbalancer.engine.policy.Connector;
 
 import static java.nio.channels.SelectionKey.OP_ACCEPT;
 
@@ -29,13 +29,12 @@ public class Listener implements Processor {
 
     public Listener(Service service, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
         if (logger.isInfoEnabled()) {
-            logger.info("Creating listener for " + service.getListeningAddress().getHostAddress() +
-                    ", port " + service.getListeningPort());
+            logger.info("Creating listener for " + service.getListeningEndpoint());
         }
         this.connector = checkNotNull(service.getConnector());
         channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
-        channel.bind(new InetSocketAddress(checkNotNull(service.getListeningAddress()), service.getListeningPort()));
+        channel.bind(checkNotNull(service.getListeningEndpoint()).getAddress());
         this.maxQueueSize = maxQueueSize;
         this.allocator = checkNotNull(allocator);
     }

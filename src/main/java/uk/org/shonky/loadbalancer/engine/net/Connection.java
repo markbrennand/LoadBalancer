@@ -200,7 +200,7 @@ public class Connection implements Processor {
             logger.trace(tag + " queue is empty: " + queue.isEmpty());
         }
 
-        enableReceive(queue.isEmpty());
+        enableReceive(queue.hasCapacity());
         enableTransmit(!queue.isEmpty() || closing);
     }
 }
