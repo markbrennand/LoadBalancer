@@ -1,4 +1,4 @@
-package uk.org.shonky.loadbalancer.engine.net;
+package uk.org.shonky.loadbalancer.util;
 
 import java.nio.ByteBuffer;
 
