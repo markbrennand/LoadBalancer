@@ -65,6 +65,10 @@ public class Connection implements Processor {
     }
 
     public void enableReceive(boolean enabled) {
+        if (key == null) {
+            return;
+        }
+
         if (enabled) {
             key.interestOps(key.interestOps() | OP_READ);
         } else {
@@ -88,6 +92,7 @@ public class Connection implements Processor {
 
         if (key != null) {
             key.cancel();
+            key = null;
         }
 
         try {
@@ -115,7 +120,7 @@ public class Connection implements Processor {
             receive();
         }
 
-        if (key.isValid() && key.isWritable()) {
+        if (key != null && key.isWritable()) {
             transmit();
         }
 
@@ -128,6 +133,10 @@ public class Connection implements Processor {
     }
 
     private void enableTransmit(boolean enabled) {
+        if (key == null) {
+            return;
+        }
+
         if (enabled) {
             key.interestOps(key.interestOps() | OP_WRITE);
         } else {
@@ -151,6 +160,7 @@ public class Connection implements Processor {
             allocator.reuse(buffer);
             if (key != null) {
                 key.cancel();
+                key = null;
             }
             channel.close();
             closed = true;
