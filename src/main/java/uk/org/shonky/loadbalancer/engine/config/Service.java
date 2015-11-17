@@ -16,11 +16,21 @@ public class Service {
     private String name;
     private ConnectorPolicy policy;
     private Properties config;
+    private Endpoint endpoint;
+    private Connector connector;
 
     public Service(String name, Configuration config, ConnectorPolicy policy) {
         this.name = checkNotNull(name);
         this.config = checkNotNull(config).getPropertiesWithPrefix(name+ ".service.");
         this.policy = checkNotNull(policy);
+
+        String address = this.config.getProperty("listen.address");
+        if (isNullOrEmpty(address)) {
+            throw new ConfigurationException("Listening address not set for service '" + name + "'");
+        }
+        endpoint =  Endpoint.parse(address, true);
+
+        connector = policy.newConnector(this.config);
     }
 
     public String getName() {
@@ -28,14 +38,10 @@ public class Service {
     }
 
     public Endpoint getListeningEndpoint() {
-        String address = config.getProperty("listen.address");
-        if (isNullOrEmpty(address)) {
-            throw new ConfigurationException("Listening address not set for service '" + name + "'");
-        }
-        return Endpoint.parse(address, true);
+        return endpoint;
     }
 
     public Connector getConnector() {
-        return policy.newConnector(config);
+        return connector;
     }
 }
