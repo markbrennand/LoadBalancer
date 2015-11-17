@@ -54,9 +54,11 @@ public class Listener implements Processor {
     }
 
     @Override
-    public Session process(Selector selector, SocketChannel channel) throws Exception {
+    public Session process(Selector selector) throws IOException {
         if (key.isAcceptable()) {
-            return new Session(channel, connector, selector, maxQueueSize, allocator);
+            SocketChannel socketChannel = channel.accept();
+            socketChannel.configureBlocking(false);
+            return new Session(socketChannel, connector, selector, maxQueueSize, allocator);
         } else {
             throw new ConnectionException("Unexpected operation detected on listener");
         }

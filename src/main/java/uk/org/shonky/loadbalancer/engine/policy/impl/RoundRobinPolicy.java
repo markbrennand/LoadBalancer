@@ -3,7 +3,6 @@ package uk.org.shonky.loadbalancer.engine.policy.impl;
 import java.util.Properties;
 
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
-import uk.org.shonky.loadbalancer.engine.config.ConfigurationException;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 import uk.org.shonky.loadbalancer.engine.policy.PolicyException;
 import uk.org.shonky.loadbalancer.engine.config.ConfigurationItem;
@@ -21,7 +20,7 @@ public class RoundRobinPolicy extends AbstractPolicy {
     public Connector newConnector(Properties config) {
         String addresses = config.getProperty("forward.addresses");
         if (isNullOrEmpty(addresses)) {
-            throw new ConfigurationException("Missing forwarding addresses definition");
+            throw new PolicyException("Missing forwarding addresses definition");
         }
 
         return new RoundRobinConnector(parseEndpointList(addresses));

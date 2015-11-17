@@ -91,6 +91,5 @@ public class ServiceTest {
             fail();
         } catch(ConfigurationException ce) {
         }
-
     }
 }

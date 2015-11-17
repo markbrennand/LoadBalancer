@@ -30,28 +30,28 @@ public class Connection implements Processor {
     private boolean closing;
     private boolean closed;
 
-    public Connection(String tag, Session session, boolean source, Selector selector, SocketChannel channe,
+    public Connection(String tag, Session session, boolean source, Selector selector, SocketChannel channel,
                       int maxQueueSize, Allocator<ByteBuffer> allocator)
             throws IOException
     {
         if (logger.isTraceEnabled()) {
-            logger.trace("Creating connection with tag '" + tag + "', channel '" + channel + "'");
+            logger.trace("Creating connection with tag '" + tag + "', channel '" + this.channel + "'");
         }
         this.tag = checkNotNull(tag);
-        this.allocator= checkNotNull(allocator);
-        this.session = session;
-        this.source = source;
+        this.session = checkNotNull(session);
         this.channel = checkNotNull(channel);
+        this.allocator = checkNotNull(allocator);
+        this.source = source;
         this.queue = new DeliveryQueue<ByteBuffer>(maxQueueSize);
 
-        if (channel.isConnected()) {
-            this.key = channel.register(selector, OP_READ, this);
+        if (this.channel.isConnected()) {
+            this.key = this.channel.register(selector, OP_READ, this);
         } else {
-            this.key = channel.register(selector, OP_CONNECT, this);
+            this.key = this.channel.register(selector, OP_CONNECT, this);
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info(tag + " registered with " + selector + ", channel connected: " + channel.isConnected());
+            logger.info(tag + " registered with " + selector + ", channel connected: " + this.channel.isConnected());
         }
     }
 
@@ -74,6 +74,7 @@ public class Connection implements Processor {
 
     public void close() {
         closing = true;
+        enableTransmit(true);
     }
 
     public void terminate() {
@@ -91,6 +92,7 @@ public class Connection implements Processor {
 
         try {
             channel.close();
+            closed = true;
             if (logger.isInfoEnabled()) {
                 logger.info(tag + " channel terminated");
             }
@@ -100,17 +102,21 @@ public class Connection implements Processor {
     }
 
     @Override
-    public Session process(Selector selector, SocketChannel channel) throws IOException{
-        if (key.isReadable()) {
-            receive();
-        }
-
-        if (key.isWritable()) {
-            transmit();
+    public Session process(Selector selector) throws IOException {
+        if (closed) {
+            return session;
         }
 
         if (key.isConnectable()) {
             connected();
+        }
+
+        if (key.isReadable()) {
+            receive();
+        }
+
+        if (key.isValid() && key.isWritable()) {
+            transmit();
         }
 
         return session;
@@ -119,6 +125,18 @@ public class Connection implements Processor {
     private void connected() throws IOException {
         channel.finishConnect();
         key.interestOps(OP_READ);
+    }
+
+    private void enableTransmit(boolean enabled) {
+        if (enabled) {
+            key.interestOps(key.interestOps() | OP_WRITE);
+        } else {
+            key.interestOps(key.interestOps() & OP_READ);
+        }
+
+        if (logger.isTraceEnabled()) {
+            logger.trace(tag + " transmit enabled: " + enabled);
+        }
     }
 
     private void receive() throws IOException {
@@ -138,19 +156,8 @@ public class Connection implements Processor {
             closed = true;
             session.closing(!source);
         } else {
+            buffer.flip();
             session.append(!source, buffer);
-        }
-    }
-
-    private void enableTransmit(boolean enabled) {
-        if (enabled) {
-            key.interestOps(key.interestOps() | OP_WRITE);
-        } else {
-            key.interestOps(key.interestOps() & OP_READ);
-        }
-
-        if (logger.isTraceEnabled()) {
-            logger.trace(tag + " transmit enabled: " + enabled);
         }
     }
 

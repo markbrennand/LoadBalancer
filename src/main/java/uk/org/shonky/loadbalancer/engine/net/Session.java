@@ -26,8 +26,8 @@ public class Session {
         this.endpoint = connector.nextEndpoint();
 
         Socket sourceSocket = source.socket();
-        SocketChannel destinationChannel = endpoint.connect();
-        Socket destinationSocket = destinationChannel.socket();
+        SocketChannel destination = endpoint.connect();
+        Socket destinationSocket = destination.socket();
 
         String from = new StringBuffer(sourceSocket.getInetAddress().getHostAddress()).
                 append("(").
@@ -46,7 +46,7 @@ public class Session {
                 this,
                 true,
                 selector,
-                destinationChannel,
+                destination,
                 maxQueueSize,
                 allocator);
 
