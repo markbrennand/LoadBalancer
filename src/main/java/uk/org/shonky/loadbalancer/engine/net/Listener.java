@@ -1,14 +1,14 @@
 package uk.org.shonky.loadbalancer.engine.net;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.ServerSocketChannel;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.util.Allocator;
@@ -19,7 +19,7 @@ import static java.nio.channels.SelectionKey.OP_ACCEPT;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Listener implements Processor {
-    private static final Logger logger = Logger.getLogger(Listener.class);
+    private static final Logger logger = LoggerFactory.getLogger(Listener.class);
 
     private ServerSocketChannel channel;
     private Connector connector;
@@ -28,9 +28,7 @@ public class Listener implements Processor {
     private int maxQueueSize;
 
     public Listener(Service service, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
-        if (logger.isInfoEnabled()) {
-            logger.info("Creating listener for " + service.getListeningEndpoint());
-        }
+        logger.info("Creating listener for {}", service.getListeningEndpoint());
         this.connector = checkNotNull(service.getConnector());
         channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
@@ -40,9 +38,7 @@ public class Listener implements Processor {
     }
 
     public void register(Selector selector) throws IOException {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Registering channel with selector " + selector);
-        }
+        logger.trace("Registering channel with selector {}", selector);
         this.key = channel.register(checkNotNull(selector), OP_ACCEPT, this);
     }
 

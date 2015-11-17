@@ -18,7 +18,7 @@ public class DevelopmentTest {
     public static void main(String[] args) throws IOException {
         Properties props = new Properties();
         props.put("TEST.service.listen.address", "7001");
-        props.put("TEST.service.forward.addresses", "172.20.13.152:80");
+        props.put("TEST.service.forward.addresses", "localhost:7002");
         ConnectorPolicy policy = new RoundRobinPolicy();
         Service service = new Service("TEST", new PropertiesConfiguration(props), policy);
 

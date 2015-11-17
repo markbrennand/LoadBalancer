@@ -6,19 +6,20 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uk.org.shonky.loadbalancer.util.Allocator;
 import uk.org.shonky.loadbalancer.util.DeliveryQueue;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 import static java.nio.channels.SelectionKey.OP_READ;
 import static java.nio.channels.SelectionKey.OP_WRITE;
 import static java.nio.channels.SelectionKey.OP_CONNECT;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class Connection implements Processor {
-    private static final Logger logger = Logger.getLogger(Connection.class);
+    private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
     private Session session;
     private boolean source;
@@ -34,9 +35,7 @@ public class Connection implements Processor {
                       int maxQueueSize, Allocator<ByteBuffer> allocator)
             throws IOException
     {
-        if (logger.isTraceEnabled()) {
-            logger.trace("Creating connection with tag '" + tag + "', channel '" + this.channel + "'");
-        }
+        logger.trace("Creating connection with tag '{}' and channel '{}'", tag, this.channel);
         this.tag = checkNotNull(tag);
         this.session = checkNotNull(session);
         this.channel = checkNotNull(channel);
@@ -50,15 +49,11 @@ public class Connection implements Processor {
             this.key = this.channel.register(selector, OP_CONNECT, this);
         }
 
-        if (logger.isInfoEnabled()) {
-            logger.info(tag + " registered with " + selector + ", channel connected: " + this.channel.isConnected());
-        }
+        logger.info("{} registered with selector {}, connected {}", tag, selector, this.channel.isConnected());
     }
 
     public void append(ByteBuffer buffer) {
-        if (logger.isTraceEnabled()) {
-            logger.trace(tag + " queueing buffer of " + buffer.remaining() + " bytes");
-        }
+        logger.trace("{} queueing buffer of {} bytes", tag, buffer.remaining());
         queue.append(buffer);
         session.enableRead(!source, queue.hasCapacity());
         enableTransmit(true);
@@ -98,11 +93,9 @@ public class Connection implements Processor {
         try {
             channel.close();
             closed = true;
-            if (logger.isInfoEnabled()) {
-                logger.info(tag + " channel terminated");
-            }
+            logger.info("{} channel terminated", tag);
         } catch(IOException ioe) {
-            logger.warn(tag + " termination failure", ioe);
+            logger.warn("{} termination failure '{}'", tag, ioe.getMessage());
         }
     }
 
@@ -112,15 +105,16 @@ public class Connection implements Processor {
             return session;
         }
 
-        if (key.isConnectable()) {
+        int ops = key.readyOps();
+        if ((ops & OP_CONNECT) != 0) {
             connected();
         }
 
-        if (key.isReadable()) {
+        if ((ops & OP_READ) != 0) {
             receive();
         }
 
-        if (key != null && key.isWritable()) {
+        if ((ops & OP_WRITE) != 0) {
             transmit();
         }
 
@@ -143,18 +137,14 @@ public class Connection implements Processor {
             key.interestOps(key.interestOps() & OP_READ);
         }
 
-        if (logger.isTraceEnabled()) {
-            logger.trace(tag + " transmit enabled: " + enabled);
-        }
+        logger.trace(tag + " {} transmit enabled: {}", tag, enabled);
     }
 
     private void receive() throws IOException {
         ByteBuffer buffer = allocator.create();
         int count = channel.read(buffer);
 
-        if (logger.isTraceEnabled()) {
-            logger.trace(tag + " read " + count + " bytes");
-        }
+        logger.trace("{} read {} bytes", tag, count);
 
         if (count < 0) {
             allocator.reuse(buffer);
@@ -192,30 +182,24 @@ public class Connection implements Processor {
         }
 
         if (queue.isEmpty()) {
-            logger.error(tag + " unexpected attempt to transmit");
+            logger.error("{} unexpected attempt to transmit", tag);
             return;
         }
 
         ByteBuffer next = queue.pop();
 
-        if (logger.isInfoEnabled()) {
-            logger.info(tag + " sending " + next.remaining() + " bytes");
-        }
+        logger.debug("{} sending {} bytes", tag, next.remaining());
 
         channel.write(next);
 
         if (next.hasRemaining()) {
-            if (logger.isInfoEnabled()) {
-                logger.info(tag + " re-queueing " + next.remaining() + " bytes");
-            }
+            logger.debug("{} re-queueing {} bytes", tag, next.remaining());
             queue.head(next);
         } else {
             allocator.reuse(next);
         }
 
-        if (logger.isTraceEnabled()) {
-            logger.trace(tag + " queue is empty: " + queue.isEmpty());
-        }
+        logger.trace("{} queue is empty: {}", tag, queue.isEmpty());
 
         enableReceive(queue.hasCapacity());
         enableTransmit(!queue.isEmpty() || closing);

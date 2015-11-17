@@ -1,9 +1,10 @@
 package uk.org.shonky.loadbalancer.engine.config;
 
-import java.net.InetAddress;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 
@@ -11,8 +12,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Service {
-    private final static Logger logger = Logger.getLogger(Service.class);
-
     private String name;
     private ConnectorPolicy policy;
     private Properties config;
