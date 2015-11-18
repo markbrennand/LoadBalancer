@@ -94,6 +94,10 @@ public class Session {
     }
 
     public void terminate() {
+        if (!endpointReleased) {
+            connector.endpointClosed(endpoint);
+            endpointReleased = true;
+        }
         sourceConnection.kill();
         destinationConnection.kill();
     }

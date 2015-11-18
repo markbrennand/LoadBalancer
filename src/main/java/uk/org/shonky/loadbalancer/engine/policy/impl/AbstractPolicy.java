@@ -15,15 +15,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class AbstractPolicy implements ConnectorPolicy {
 
     protected long getExpiry(Service service) {
-        String value = service.getConfiguration().get("expiry");
+        String value = service.getConfiguration().get("getExpiry");
         if (isNullOrEmpty(value)) {
-            throw new ConfigurationException("Service {0} has no expiry definition", service.getName());
+            throw new ConfigurationException("Service {0} has no getExpiry definition", service.getName());
         }
 
         try {
             return Long.parseLong(value);
         } catch(NumberFormatException nfe) {
-            throw new ConfigurationException("Service {0} has non numeric expiry", service.getName());
+            throw new ConfigurationException("Service {0} has non numeric getExpiry", service.getName());
         }
     }
 

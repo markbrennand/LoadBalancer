@@ -50,6 +50,16 @@ public class Listener implements Processor {
     }
 
     @Override
+    public String getId() {
+        return new StringBuffer("Listener(").append(channel).append(")").toString();
+    }
+
+    @Override
+    public long getExpiry() {
+        return Long.MAX_VALUE;
+    }
+
+    @Override
     public void process(Selector selector) throws IOException {
         if (key.isAcceptable()) {
             SocketChannel socketChannel = channel.accept();
@@ -67,10 +77,5 @@ public class Listener implements Processor {
         } catch(IOException ioe) {
             logger.error("{0} termination failure  {1}", channel, ioe.getMessage());
         }
-    }
-
-    @Override
-    public long expiry() {
-        return Long.MAX_VALUE;
     }
 }

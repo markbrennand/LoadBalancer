@@ -17,7 +17,7 @@ public class ServiceTest {
         Properties props = new Properties();
         props.put("TEST.service.listen.address", "7001");
         props.put("TEST.service.forward.addresses", "localhost:1, localhost:2, localhost:3");
-        props.put("TEST.service.expiry", "1000");
+        props.put("TEST.service.getExpiry", "1000");
         props.put("TEST2.service.listen.address", "7002");
         props.put("TEST2.service.forward.addresses", "localhost:4, localhost:5, localhost:6");
 
@@ -51,7 +51,7 @@ public class ServiceTest {
         Properties props = new Properties();
         props.put("TEST.service.listen.address", "localhost:7001");
         props.put("TEST.service.forward.addresses", "localhost:1, localhost:2, localhost:3");
-        props.put("TEST.service.expiry", "1000");
+        props.put("TEST.service.getExpiry", "1000");
         props.put("TEST2.service.listen.address", "localhost:7002");
         props.put("TEST2.service.forward.addresses", "localhost:4, localhost:5, localhost:6");
 

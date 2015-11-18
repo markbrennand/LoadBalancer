@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.nio.channels.Selector;
 
 public interface Processor {
+    public String getId();
+    public long getExpiry();
     public void process(Selector selector) throws IOException;
-    public long expiry();
     public void terminate();
 }

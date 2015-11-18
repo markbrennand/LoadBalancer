@@ -27,16 +27,16 @@ public class Connection implements Processor {
     private Allocator<ByteBuffer> allocator;
     private SocketChannel channel;
     private SelectionKey key;
-    private String tag;
+    private String id;
     private boolean closing;
     private boolean closed;
 
-    public Connection(String tag, Session session, boolean source, Selector selector, SocketChannel channel,
+    public Connection(String id, Session session, boolean source, Selector selector, SocketChannel channel,
                       int maxQueueSize, Allocator<ByteBuffer> allocator)
             throws IOException
     {
-        logger.trace("Creating connection with tag {0} and channel {1}", tag, this.channel);
-        this.tag = checkNotNull(tag);
+        logger.trace("Creating connection with id {0} and channel {1}", id, this.channel);
+        this.id = checkNotNull(id);
         this.session = checkNotNull(session);
         this.channel = checkNotNull(channel);
         this.allocator = checkNotNull(allocator);
@@ -49,11 +49,11 @@ public class Connection implements Processor {
             this.key = this.channel.register(selector, OP_CONNECT, this);
         }
 
-        logger.info("{0} registered with selector {1}, connected {2}", tag, selector, this.channel.isConnected());
+        logger.info("{0} registered with selector {1}, connected {2}", id, selector, this.channel.isConnected());
     }
 
     public void append(ByteBuffer buffer) {
-        logger.trace("{0} queueing buffer of {1} bytes", tag, buffer.remaining());
+        logger.trace("{0} queueing buffer of {1} bytes", id, buffer.remaining());
         queue.append(buffer);
         session.enableRead(!source, queue.hasCapacity());
         enableTransmit(true);
@@ -74,6 +74,16 @@ public class Connection implements Processor {
     public void close() {
         closing = true;
         enableTransmit(true);
+    }
+
+    @Override
+    public long getExpiry() {
+        return session.expiry();
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -103,11 +113,6 @@ public class Connection implements Processor {
         session.terminate();
     }
 
-    @Override
-    public long expiry() {
-        return session.expiry();
-    }
-
     public void kill() {
         if (closed) {
             return;
@@ -125,9 +130,9 @@ public class Connection implements Processor {
         try {
             channel.close();
             closed = true;
-            logger.info("{0} channel terminated", tag);
+            logger.info("{0} channel terminated", id);
         } catch(IOException ioe) {
-            logger.warn("{0} termination failure {1}", tag, ioe.getMessage());
+            logger.warn("{0} termination failure {1}", id, ioe.getMessage());
         }
     }
 
@@ -142,7 +147,7 @@ public class Connection implements Processor {
             key.interestOps(key.interestOps() & OP_READ);
         }
 
-        logger.trace(tag + " {0} transmit enabled: {1}", tag, enabled);
+        logger.trace(id + " {0} transmit enabled: {1}", id, enabled);
     }
 
     private void connected() throws IOException {
@@ -158,7 +163,7 @@ public class Connection implements Processor {
         ByteBuffer buffer = allocator.create();
         int count = channel.read(buffer);
 
-        logger.trace("{0} read {1} bytes", tag, count);
+        logger.trace("{0} read {1} bytes", id, count);
 
         if (count < 0) {
             allocator.reuse(buffer);
@@ -180,7 +185,7 @@ public class Connection implements Processor {
 
         if (closing) {
             if (logger.isTraceEnabled()) {
-                logger.trace(tag + " closing");
+                logger.trace(id + " closing");
             }
             if (queue.isEmpty()) {
                 if (key != null) {
@@ -198,24 +203,24 @@ public class Connection implements Processor {
         }
 
         if (queue.isEmpty()) {
-            logger.error("{0} unexpected attempt to transmit", tag);
+            logger.error("{0} unexpected attempt to transmit", id);
             return;
         }
 
         ByteBuffer next = queue.pop();
 
-        logger.debug("{0} sending {1} bytes", tag, next.remaining());
+        logger.debug("{0} sending {1} bytes", id, next.remaining());
 
         channel.write(next);
 
         if (next.hasRemaining()) {
-            logger.debug("{0} re-queueing {1} bytes", tag, next.remaining());
+            logger.debug("{0} re-queueing {1} bytes", id, next.remaining());
             queue.head(next);
         } else {
             allocator.reuse(next);
         }
 
-        logger.trace("{0} queue is empty: {1}", tag, queue.isEmpty());
+        logger.trace("{0} queue is empty: {1}", id, queue.isEmpty());
 
         enableReceive(queue.hasCapacity());
         enableTransmit(!queue.isEmpty() || closing);
