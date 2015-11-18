@@ -13,6 +13,16 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class AbstractPolicy implements ConnectorPolicy {
+    private String name;
+
+    public AbstractPolicy(String name) {
+        this.name = checkNotNull(name);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
 
     protected long getExpiry(Service service) {
         String value = service.getConfiguration().get("expiry");

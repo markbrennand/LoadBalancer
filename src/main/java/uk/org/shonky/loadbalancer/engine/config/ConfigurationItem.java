@@ -4,13 +4,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ConfigurationItem {
     private String tag;
+    private String field;
     private String description;
     private String type;
     private String validationURL;
     private boolean list;
 
-    public ConfigurationItem(String tag, String description, String type, String validationURL, boolean list) {
+    public ConfigurationItem(String tag, String field, String description, String type, String validationURL,
+                             boolean list)
+    {
         this.tag = checkNotNull(tag);
+        this.field = checkNotNull(field);
         this.description = checkNotNull(description);
         this.type = checkNotNull(type);
         this.validationURL = checkNotNull(validationURL);
@@ -19,6 +23,10 @@ public class ConfigurationItem {
 
     public String getTag() {
         return tag;
+    }
+
+    public String getField() {
+        return field;
     }
 
     public String getDescription() {

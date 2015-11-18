@@ -1,5 +1,6 @@
 package uk.org.shonky.loadbalancer.engine.policy.impl;
 
+import org.springframework.stereotype.Component;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
@@ -8,11 +9,32 @@ import uk.org.shonky.loadbalancer.engine.config.ConfigurationItem;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
+@Component("RoundRobinPolicy")
 public class RoundRobinPolicy extends AbstractPolicy {
+
+    public RoundRobinPolicy() {
+        super("Round Robin");
+    }
 
     @Override
     public ConfigurationItem[] getConfigurationItems() {
-        throw new PolicyException("Not yet implemented");
+        return new ConfigurationItem[] {
+                new ConfigurationItem(
+                        "listen.address",
+                        "Listening Address",
+                        "Address and port on which service will listen. Format is (host:)port",
+                        "string",
+                        "validateListeningAddress",
+                        false),
+                new ConfigurationItem(
+                        "forward.addresses",
+                        "Forwarding Addresses",
+                        "Address to which a forward connection will be made. Fomrat is host:port",
+                        "string",
+                        "validateForwardingAddress",
+                        true
+                )
+        };
     }
 
     @Override
