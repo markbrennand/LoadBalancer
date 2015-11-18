@@ -22,6 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class Listener implements Processor {
     private static final Logger logger = LoggerFactory.getLogger(Listener.class);
 
+    private Service service;
     private ServerSocketChannel channel;
     private Endpoint endpoint;
     private Connector connector;
@@ -30,6 +31,7 @@ public class Listener implements Processor {
     private int maxQueueSize;
 
     public Listener(Service service, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
+        this.service = checkNotNull(service);
         logger.info("Creating listener for {0}", service.getListeningEndpoint());
         this.connector = checkNotNull(service.getConnector());
         channel = ServerSocketChannel.open();
@@ -54,7 +56,7 @@ public class Listener implements Processor {
 
     @Override
     public String getId() {
-        return new StringBuffer("Listener[").append(endpoint).append("]").toString();
+        return new StringBuffer(service.getName()).append(" [Listener]").toString();
     }
 
     @Override
@@ -67,7 +69,7 @@ public class Listener implements Processor {
         if (key.isAcceptable()) {
             SocketChannel socketChannel = channel.accept();
             socketChannel.configureBlocking(false);
-            new Session(socketChannel, connector, selector, maxQueueSize, allocator);
+            new Session(socketChannel, service, connector, selector, maxQueueSize, allocator);
         } else {
             throw new ConnectionException("Unexpected operation detected on listener");
         }

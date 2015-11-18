@@ -7,6 +7,7 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
 import uk.org.shonky.loadbalancer.util.Allocator;
+import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 
@@ -21,7 +22,7 @@ public class Session {
     private long expiry;
     private long lastActive;
 
-    public Session(SocketChannel source, Connector connector, Selector selector, int maxQueueSize,
+    public Session(SocketChannel source, Service service, Connector connector, Selector selector, int maxQueueSize,
                    Allocator<ByteBuffer> allocator)
             throws IOException
     {
@@ -45,7 +46,7 @@ public class Session {
                 toString();
 
         sourceConnection = new Connection(
-                new StringBuffer(from).append(" -> ").append(to).toString(),
+                new StringBuffer(service.getName()).append(" [").append(from).append(" -> ").append(to).append("]").toString(),
                 this,
                 true,
                 selector,
@@ -54,7 +55,7 @@ public class Session {
                 allocator);
 
         destinationConnection = new Connection(
-                new StringBuffer(from).append(" <- ").append(to).toString(),
+                new StringBuffer(service.getName()).append(" [").append(from).append(" <- ").append(to).append("]").toString(),
                 this,
                 false,
                 selector,
