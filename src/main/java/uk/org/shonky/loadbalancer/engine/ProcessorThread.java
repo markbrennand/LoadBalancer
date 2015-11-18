@@ -24,6 +24,7 @@ import static com.google.common.collect.ImmutableSet.copyOf;
 
 public class ProcessorThread implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ProcessorThread.class);
+    private static final long ONE_HOUR = 60 * 60 * 1000L;
 
     private Selector selector;
 
@@ -80,7 +81,7 @@ public class ProcessorThread implements Runnable {
 
     private long purgeExpired() {
         long now = System.currentTimeMillis();
-        long minWaitTime = Long.MAX_VALUE - now;
+        long minWaitTime = ONE_HOUR;    // OS/X doesn't like very large wait times. So, use an hour.
         for (SelectionKey key : selector.keys()) {
             Processor processor = (Processor) key.attachment();
             long waitTime = processor.getExpiry() - now;
@@ -90,6 +91,8 @@ public class ProcessorThread implements Runnable {
                 minWaitTime = waitTime;
             }
         }
+
+
         return minWaitTime;
     }
 
