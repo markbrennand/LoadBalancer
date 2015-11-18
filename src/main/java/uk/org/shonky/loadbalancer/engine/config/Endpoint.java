@@ -10,7 +10,7 @@ import java.nio.channels.SocketChannel;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Endpoint {
-    private SocketAddress address;
+    private InetSocketAddress address;
 
     public Endpoint(int port) {
        validatePort(port);
@@ -31,6 +31,11 @@ public class Endpoint {
 
     public SocketAddress getAddress() {
         return address;
+    }
+
+    @Override
+    public String toString() {
+        return new StringBuilder(address.getHostName()).append("(").append(address.getPort()).append(")").toString();
     }
 
     public static Endpoint parse(String value, boolean listeningAddress) {

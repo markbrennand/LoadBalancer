@@ -10,8 +10,9 @@ import java.nio.channels.ServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.util.Allocator;
+import uk.org.shonky.loadbalancer.engine.config.Endpoint;
+import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 
 import static java.nio.channels.SelectionKey.OP_ACCEPT;
@@ -22,6 +23,7 @@ public class Listener implements Processor {
     private static final Logger logger = LoggerFactory.getLogger(Listener.class);
 
     private ServerSocketChannel channel;
+    private Endpoint endpoint;
     private Connector connector;
     private Allocator<ByteBuffer> allocator;
     private SelectionKey key;
@@ -32,7 +34,8 @@ public class Listener implements Processor {
         this.connector = checkNotNull(service.getConnector());
         channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
-        channel.bind(checkNotNull(service.getListeningEndpoint()).getAddress());
+        endpoint = service.getListeningEndpoint();
+        channel.bind(endpoint.getAddress());
         this.maxQueueSize = maxQueueSize;
         this.allocator = checkNotNull(allocator);
     }
@@ -51,7 +54,7 @@ public class Listener implements Processor {
 
     @Override
     public String getId() {
-        return new StringBuffer("Listener(").append(channel).append(")").toString();
+        return new StringBuffer("Listener[").append(endpoint).append("]").toString();
     }
 
     @Override

@@ -12,6 +12,13 @@ import org.slf4j.LoggerFactory;
 import uk.org.shonky.loadbalancer.engine.net.Listener;
 import uk.org.shonky.loadbalancer.engine.net.Processor;
 
+import static java.nio.channels.SelectionKey.OP_ACCEPT;
+import static java.nio.channels.SelectionKey.OP_CONNECT;
+import static java.nio.channels.SelectionKey.OP_READ;
+import static java.nio.channels.SelectionKey.OP_WRITE;
+
+
+
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.ImmutableSet.copyOf;
 
@@ -57,7 +64,7 @@ public class ProcessorThread implements Runnable {
         long now = System.currentTimeMillis();
         for (SelectionKey key : keys) {
             Processor processor = (Processor) key.attachment();
-            retSet.add(new ProcessorState(processor.getId(), key.interestOps(), processor.getExpiry() - now));
+            retSet.add(new ProcessorState(processor.getId(), toOpsString(key.interestOps()), processor.getExpiry() - now));
         }
         return copyOf(retSet);
     }
@@ -84,5 +91,27 @@ public class ProcessorThread implements Runnable {
             }
         }
         return minWaitTime;
+    }
+
+    private String toOpsString(int ops) {
+        switch(ops & (OP_CONNECT | OP_ACCEPT | OP_READ | OP_WRITE)) {
+            case OP_CONNECT:
+                return "CONNECT";
+
+            case OP_ACCEPT:
+                return "ACCEPT";
+
+            case OP_READ | OP_WRITE:
+                return "READ+WRITE";
+
+            case OP_READ:
+                return "READ";
+
+            case OP_WRITE:
+                return "WRITE";
+
+            default:
+                return "NONE";
+        }
     }
 }
