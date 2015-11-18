@@ -62,6 +62,15 @@ public class ProcessorThread implements Runnable {
         return copyOf(retSet);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof ProcessorThread) {
+            return ((ProcessorThread) obj).selector.equals(selector);
+        } else {
+            return false;
+        }
+    }
+
     private long purgeExpired() {
         long now = System.currentTimeMillis();
         long minWaitTime = Long.MAX_VALUE - now;

@@ -5,6 +5,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import uk.org.shonky.loadbalancer.dao.MonitoringDAO;
 import uk.org.shonky.loadbalancer.engine.ProcessorState;
 import uk.org.shonky.loadbalancer.engine.ProcessorThread;
 import uk.org.shonky.loadbalancer.engine.config.Service;
@@ -24,8 +25,10 @@ public class DevelopmentTest {
     public static void main(String[] args) throws Exception {
         ConfigurableApplicationContext context = SpringApplication.run(DevelopmentTest.class, args);
         ConfigurationService configService = context.getBeanFactory().getBean(ConfigurationService.class);
+        MonitoringDAO monitoringDAO = context.getBeanFactory().getBean(MonitoringDAO.class);
 
         ProcessorThread processor = new ProcessorThread();
+        monitoringDAO.addProcessorThread(processor);
 
         List<Service> services = configService.getServices();
         for (Service service : services) {
@@ -34,27 +37,5 @@ public class DevelopmentTest {
         }
 
         new Thread(processor).start();
-
-        for (;;) {
-            System.out.println("------");
-            for (ProcessorState state : processor.getStates()) {
-                System.out.print(state.getId() + ", expires " + state.getExpiry() +"ms, operations ");
-                int ops = state.getOps();
-                if ((ops & OP_ACCEPT) != 0) {
-                    System.out.println("ACCEPT");
-                } else if ((ops & OP_CONNECT) != 0) {
-                    System.out.println("CONNECT");
-                } else {
-                    if ((ops & (OP_READ | OP_WRITE)) == (OP_READ | OP_WRITE)) {
-                        System.out.println("READ+WRITE");
-                    } else if ((ops & OP_READ) != 0) {
-                        System.out.println("READ");
-                    } else if ((ops & OP_WRITE) != 0) {
-                        System.out.println("WRITE");
-                    }
-                }
-            }
-            Thread.sleep(1000);
-        }
     }
 }
