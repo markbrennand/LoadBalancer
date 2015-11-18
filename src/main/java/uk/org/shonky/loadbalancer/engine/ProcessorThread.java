@@ -1,10 +1,10 @@
 package uk.org.shonky.loadbalancer.engine;
 
 import java.io.IOException;
-import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.util.Iterator;
+import java.nio.channels.SelectionKey;
 import java.util.Set;
+import java.util.Iterator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
