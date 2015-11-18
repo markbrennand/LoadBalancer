@@ -32,7 +32,7 @@ public class Listener implements Processor {
 
     public Listener(Service service, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
         this.service = checkNotNull(service);
-        logger.info("Creating listener for {0}", service.getListeningEndpoint());
+        logger.info("Creating listener for {}", service.getListeningEndpoint());
         this.connector = checkNotNull(service.getConnector());
         channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
@@ -43,7 +43,7 @@ public class Listener implements Processor {
     }
 
     public void register(Selector selector) throws IOException {
-        logger.trace("Registering channel with selector {0}", selector);
+        logger.debug("Registering channel with selector {}", selector);
         this.key = channel.register(checkNotNull(selector), OP_ACCEPT, this);
     }
 
@@ -80,7 +80,7 @@ public class Listener implements Processor {
         try {
             channel.close();
         } catch(IOException ioe) {
-            logger.error("{0} termination failure  {1}", channel, ioe.getMessage());
+            logger.error("{} termination failure  {}", channel, ioe.getMessage());
         }
     }
 }
