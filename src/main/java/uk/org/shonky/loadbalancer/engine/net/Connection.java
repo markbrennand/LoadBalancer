@@ -76,7 +76,39 @@ public class Connection implements Processor {
         enableTransmit(true);
     }
 
+    @Override
+    public void process(Selector selector) throws IOException {
+        if (closed) {
+            return;
+        }
+
+        int ops = key.readyOps();
+        if ((ops & OP_CONNECT) != 0) {
+            connected();
+        }
+
+        if ((ops & OP_READ) != 0) {
+            receive();
+        }
+
+        if ((ops & OP_WRITE) != 0) {
+            transmit();
+        }
+
+        return;
+    }
+
+    @Override
     public void terminate() {
+        session.terminate();
+    }
+
+    @Override
+    public long getExpiry() {
+        return session.getExpiry();
+    }
+
+    public void kill() {
         if (closed) {
             return;
         }
@@ -99,33 +131,6 @@ public class Connection implements Processor {
         }
     }
 
-    @Override
-    public Session process(Selector selector) throws IOException {
-        if (closed) {
-            return session;
-        }
-
-        int ops = key.readyOps();
-        if ((ops & OP_CONNECT) != 0) {
-            connected();
-        }
-
-        if ((ops & OP_READ) != 0) {
-            receive();
-        }
-
-        if ((ops & OP_WRITE) != 0) {
-            transmit();
-        }
-
-        return session;
-    }
-
-    private void connected() throws IOException {
-        channel.finishConnect();
-        key.interestOps(OP_READ);
-    }
-
     private void enableTransmit(boolean enabled) {
         if (key == null) {
             return;
@@ -140,7 +145,16 @@ public class Connection implements Processor {
         logger.trace(tag + " {} transmit enabled: {}", tag, enabled);
     }
 
+    private void connected() throws IOException {
+        session.active();
+
+        channel.finishConnect();
+        key.interestOps(OP_READ);
+    }
+
     private void receive() throws IOException {
+        session.active();
+
         ByteBuffer buffer = allocator.create();
         int count = channel.read(buffer);
 
@@ -162,6 +176,8 @@ public class Connection implements Processor {
     }
 
     private void transmit() throws IOException {
+        session.active();
+
         if (closing) {
             if (logger.isTraceEnabled()) {
                 logger.trace(tag + " closing");

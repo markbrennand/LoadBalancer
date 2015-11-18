@@ -17,6 +17,9 @@ public class Session {
     private Endpoint endpoint;
     private Connection sourceConnection;
     private Connection destinationConnection;
+    private boolean endpointReleased;
+    private long expiry;
+    private long lastActive;
 
     public Session(SocketChannel source, Connector connector, Selector selector, int maxQueueSize,
                    Allocator<ByteBuffer> allocator)
@@ -58,6 +61,8 @@ public class Session {
                 source,
                 maxQueueSize,
                 allocator);
+
+        active();
     }
 
     public void append(boolean source, ByteBuffer buffer) {
@@ -76,17 +81,28 @@ public class Session {
         }
     }
 
-    public void closing(boolean source) {
+    public synchronized void closing(boolean source) {
         if (source) {
             sourceConnection.close();
         } else {
             destinationConnection.close();
         }
+        if (!endpointReleased) {
+            connector.endpointClosed(endpoint);
+            endpointReleased = true;
+        }
     }
 
     public void terminate() {
-        sourceConnection.terminate();
-        destinationConnection.terminate();
-        connector.endpointClosed(endpoint);
+        sourceConnection.kill();
+        destinationConnection.kill();
+    }
+
+    public void active() {
+        this.lastActive = System.currentTimeMillis();
+    }
+
+    public long getExpiry() {
+        return (System.currentTimeMillis() - lastActive) + connector.getExpiry();
     }
 }

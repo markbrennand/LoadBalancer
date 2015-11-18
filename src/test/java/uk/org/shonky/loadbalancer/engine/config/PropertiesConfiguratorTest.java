@@ -18,13 +18,13 @@ public class PropertiesConfiguratorTest {
 
         PropertiesConfiguration config = new PropertiesConfiguration(props);
 
-        assertEquals(2, config.getPropertiesWithPrefix("TEST.").size());
-        assertEquals("one", config.getPropertiesWithPrefix("TEST.").get("a"));
-        assertEquals("two", config.getPropertiesWithPrefix("TEST.").get("b.c"));
+        assertEquals(2, config.getConfiguration("TEST.").size());
+        assertEquals("one", config.getConfiguration("TEST.").get("a"));
+        assertEquals("two", config.getConfiguration("TEST.").get("b.c"));
 
-        assertEquals(3, config.getPropertiesWithPrefix("TEST").size());
-        assertEquals("one", config.getPropertiesWithPrefix("TEST").get(".a"));
-        assertEquals("two", config.getPropertiesWithPrefix("TEST").get(".b.c"));
-        assertEquals("three", config.getPropertiesWithPrefix("TEST").get("2.a"));
+        assertEquals(3, config.getConfiguration("TEST").size());
+        assertEquals("one", config.getConfiguration("TEST").get(".a"));
+        assertEquals("two", config.getConfiguration("TEST").get(".b.c"));
+        assertEquals("three", config.getConfiguration("TEST").get("2.a"));
     }
 }

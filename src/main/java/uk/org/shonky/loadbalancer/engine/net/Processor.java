@@ -2,8 +2,9 @@ package uk.org.shonky.loadbalancer.engine.net;
 
 import java.io.IOException;
 import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 
 public interface Processor {
-    public Session process(Selector selector) throws IOException;
+    public void process(Selector selector) throws IOException;
+    public long getExpiry();
+    public void terminate();
 }

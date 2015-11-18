@@ -1,13 +1,31 @@
 package uk.org.shonky.loadbalancer.engine.policy.impl;
 
+import java.util.Map;
 import java.util.List;
 
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
+import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.config.ConfigurationException;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class AbstractPolicy implements ConnectorPolicy {
+
+    protected long getExpiry(Service service) {
+        String value = service.getConfiguration().get("expiry");
+        if (isNullOrEmpty(value)) {
+            throw new ConfigurationException("Service '" + service.getName() + "' has no expiry definition");
+        }
+
+        try {
+            return Long.parseLong(value);
+        } catch(NumberFormatException nfe) {
+            throw new ConfigurationException("Service '" + service.getName() + "' has non numeric expiry");
+        }
+    }
 
     protected Endpoint parseEndpoint(String value) {
         return Endpoint.parse(value, false);

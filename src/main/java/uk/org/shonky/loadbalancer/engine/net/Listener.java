@@ -28,7 +28,7 @@ public class Listener implements Processor {
     private int maxQueueSize;
 
     public Listener(Service service, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
-        logger.info("Creating listener for {}", service.getListeningEndpoint());
+        logger.info("Creating listener for '{}'", service.getListeningEndpoint());
         this.connector = checkNotNull(service.getConnector());
         channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
@@ -50,13 +50,27 @@ public class Listener implements Processor {
     }
 
     @Override
-    public Session process(Selector selector) throws IOException {
+    public void process(Selector selector) throws IOException {
         if (key.isAcceptable()) {
             SocketChannel socketChannel = channel.accept();
             socketChannel.configureBlocking(false);
-            return new Session(socketChannel, connector, selector, maxQueueSize, allocator);
+            new Session(socketChannel, connector, selector, maxQueueSize, allocator);
         } else {
             throw new ConnectionException("Unexpected operation detected on listener");
         }
+    }
+
+    @Override
+    public void terminate() {
+        try {
+            channel.close();
+        } catch(IOException ioe) {
+            logger.error("{} termination failure  '{}'", channel, ioe.getMessage());
+        }
+    }
+
+    @Override
+    public long getExpiry() {
+        return Long.MAX_VALUE;
     }
 }
