@@ -28,7 +28,7 @@ public class Listener implements Processor {
     private int maxQueueSize;
 
     public Listener(Service service, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
-        logger.info("Creating listener for '{}'", service.getListeningEndpoint());
+        logger.info("Creating listener for {0}", service.getListeningEndpoint());
         this.connector = checkNotNull(service.getConnector());
         channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
@@ -38,7 +38,7 @@ public class Listener implements Processor {
     }
 
     public void register(Selector selector) throws IOException {
-        logger.trace("Registering channel with selector {}", selector);
+        logger.trace("Registering channel with selector {0}", selector);
         this.key = channel.register(checkNotNull(selector), OP_ACCEPT, this);
     }
 
@@ -65,12 +65,12 @@ public class Listener implements Processor {
         try {
             channel.close();
         } catch(IOException ioe) {
-            logger.error("{} termination failure  '{}'", channel, ioe.getMessage());
+            logger.error("{0} termination failure  {1}", channel, ioe.getMessage());
         }
     }
 
     @Override
-    public long getExpiry() {
+    public long expiry() {
         return Long.MAX_VALUE;
     }
 }

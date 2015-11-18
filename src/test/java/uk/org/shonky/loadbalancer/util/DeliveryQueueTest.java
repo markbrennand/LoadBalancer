@@ -1,6 +1,7 @@
 package uk.org.shonky.loadbalancer.util;
 
 import org.junit.*;
+
 import static org.junit.Assert.*;
 
 public class DeliveryQueueTest {

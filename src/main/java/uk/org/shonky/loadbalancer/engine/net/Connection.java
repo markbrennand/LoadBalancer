@@ -35,7 +35,7 @@ public class Connection implements Processor {
                       int maxQueueSize, Allocator<ByteBuffer> allocator)
             throws IOException
     {
-        logger.trace("Creating connection with tag '{}' and channel '{}'", tag, this.channel);
+        logger.trace("Creating connection with tag {0} and channel {1}", tag, this.channel);
         this.tag = checkNotNull(tag);
         this.session = checkNotNull(session);
         this.channel = checkNotNull(channel);
@@ -49,11 +49,11 @@ public class Connection implements Processor {
             this.key = this.channel.register(selector, OP_CONNECT, this);
         }
 
-        logger.info("{} registered with selector {}, connected {}", tag, selector, this.channel.isConnected());
+        logger.info("{0} registered with selector {1}, connected {2}", tag, selector, this.channel.isConnected());
     }
 
     public void append(ByteBuffer buffer) {
-        logger.trace("{} queueing buffer of {} bytes", tag, buffer.remaining());
+        logger.trace("{0} queueing buffer of {1} bytes", tag, buffer.remaining());
         queue.append(buffer);
         session.enableRead(!source, queue.hasCapacity());
         enableTransmit(true);
@@ -104,8 +104,8 @@ public class Connection implements Processor {
     }
 
     @Override
-    public long getExpiry() {
-        return session.getExpiry();
+    public long expiry() {
+        return session.expiry();
     }
 
     public void kill() {
@@ -125,9 +125,9 @@ public class Connection implements Processor {
         try {
             channel.close();
             closed = true;
-            logger.info("{} channel terminated", tag);
+            logger.info("{0} channel terminated", tag);
         } catch(IOException ioe) {
-            logger.warn("{} termination failure '{}'", tag, ioe.getMessage());
+            logger.warn("{0} termination failure {1}", tag, ioe.getMessage());
         }
     }
 
@@ -142,7 +142,7 @@ public class Connection implements Processor {
             key.interestOps(key.interestOps() & OP_READ);
         }
 
-        logger.trace(tag + " {} transmit enabled: {}", tag, enabled);
+        logger.trace(tag + " {0} transmit enabled: {1}", tag, enabled);
     }
 
     private void connected() throws IOException {
@@ -158,7 +158,7 @@ public class Connection implements Processor {
         ByteBuffer buffer = allocator.create();
         int count = channel.read(buffer);
 
-        logger.trace("{} read {} bytes", tag, count);
+        logger.trace("{0} read {1} bytes", tag, count);
 
         if (count < 0) {
             allocator.reuse(buffer);
@@ -198,24 +198,24 @@ public class Connection implements Processor {
         }
 
         if (queue.isEmpty()) {
-            logger.error("{} unexpected attempt to transmit", tag);
+            logger.error("{0} unexpected attempt to transmit", tag);
             return;
         }
 
         ByteBuffer next = queue.pop();
 
-        logger.debug("{} sending {} bytes", tag, next.remaining());
+        logger.debug("{0} sending {1} bytes", tag, next.remaining());
 
         channel.write(next);
 
         if (next.hasRemaining()) {
-            logger.debug("{} re-queueing {} bytes", tag, next.remaining());
+            logger.debug("{0} re-queueing {1} bytes", tag, next.remaining());
             queue.head(next);
         } else {
             allocator.reuse(next);
         }
 
-        logger.trace("{} queue is empty: {}", tag, queue.isEmpty());
+        logger.trace("{0} queue is empty: {1}", tag, queue.isEmpty());
 
         enableReceive(queue.hasCapacity());
         enableTransmit(!queue.isEmpty() || closing);

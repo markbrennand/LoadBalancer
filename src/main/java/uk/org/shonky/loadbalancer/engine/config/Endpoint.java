@@ -41,14 +41,14 @@ public class Endpoint {
             if (listeningAddress) {
                 address = null;
             } else {
-                throw new ConfigurationException("Invalid connection address '" + value + "', missing hostname / IP");
+                throw new ConfigurationException("Invalid connection address ''{0}'', missing hostname / IP", value);
             }
         } else {
             address = value.substring(0, split);
         }
 
         if (split == (value.length() - 1)) {
-            throw new ConfigurationException("Invalid address '" + value + "', missing port number");
+            throw new ConfigurationException("Invalid address ''{0}'', missing port number", value);
         }
 
         try {
@@ -58,9 +58,9 @@ public class Endpoint {
                 return new Endpoint(InetAddress.getByName(address), Integer.parseInt(value.substring(split + 1)));
             }
         } catch(NumberFormatException nfe) {
-            throw new ConfigurationException("Invalid address '" + value + "', non numeric port number");
+            throw new ConfigurationException("Invalid address ''{0}'', non numeric port number", value);
         } catch(UnknownHostException uhe) {
-            throw new ConfigurationException("Invalid address '" + value + "', hostname not found");
+            throw new ConfigurationException("Invalid address ''{0}'', hostname not found", value);
         }
     }
 

@@ -19,7 +19,7 @@ public class RoundRobinPolicy extends AbstractPolicy {
     public Connector newConnector(Service service) {
         String addresses = service.getConfiguration().get("forward.addresses");
         if (isNullOrEmpty(addresses)) {
-            throw new PolicyException("Missing forwarding addresses definition");
+            throw new PolicyException("Service {0} has no forwarding addresses'", service.getName());
         }
 
         return new RoundRobinConnector(parseEndpointList(addresses), getExpiry(service));

@@ -5,6 +5,6 @@ import java.nio.channels.Selector;
 
 public interface Processor {
     public void process(Selector selector) throws IOException;
-    public long getExpiry();
+    public long expiry();
     public void terminate();
 }

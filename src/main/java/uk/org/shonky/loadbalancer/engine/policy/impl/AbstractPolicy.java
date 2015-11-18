@@ -17,13 +17,13 @@ public abstract class AbstractPolicy implements ConnectorPolicy {
     protected long getExpiry(Service service) {
         String value = service.getConfiguration().get("expiry");
         if (isNullOrEmpty(value)) {
-            throw new ConfigurationException("Service '" + service.getName() + "' has no expiry definition");
+            throw new ConfigurationException("Service {0} has no expiry definition", service.getName());
         }
 
         try {
             return Long.parseLong(value);
         } catch(NumberFormatException nfe) {
-            throw new ConfigurationException("Service '" + service.getName() + "' has non numeric expiry");
+            throw new ConfigurationException("Service {0} has non numeric expiry", service.getName());
         }
     }
 

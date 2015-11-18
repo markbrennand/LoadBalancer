@@ -102,7 +102,7 @@ public class Session {
         this.lastActive = System.currentTimeMillis();
     }
 
-    public long getExpiry() {
-        return (System.currentTimeMillis() - lastActive) + connector.getExpiry();
+    public long expiry() {
+        return lastActive + connector.getExpiry();
     }
 }

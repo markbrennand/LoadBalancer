@@ -22,7 +22,7 @@ public class Service {
 
         String address = this.config.get("listen.address");
         if (isNullOrEmpty(address)) {
-            throw new ConfigurationException("Listening address not set for service '" + name + "'");
+            throw new ConfigurationException("Listening address not set for service {0}", name);
         }
         endpoint =  Endpoint.parse(address, true);
 
