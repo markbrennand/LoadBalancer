@@ -10,15 +10,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Service {
     private String name;
-    private ConnectorPolicy policy;
+    private String policyName;
     private Map<String, String> config;
     private Endpoint endpoint;
     private Connector connector;
 
-    public Service(String name, Configuration config, ConnectorPolicy policy) {
+    public Service(String name, Configuration config) {
         this.name = checkNotNull(name);
-        this.config = checkNotNull(config).getConfiguration(name+ ".service.");
-        this.policy = checkNotNull(policy);
+        this.config = checkNotNull(config).getConfiguration(name + ".service.");
 
         String address = this.config.get("listen.address");
         if (isNullOrEmpty(address)) {
@@ -26,11 +25,18 @@ public class Service {
         }
         endpoint =  Endpoint.parse(address, true);
 
-        connector = policy.newConnector(this);
+        policyName = this.config.get("connector.policy");
+        if (isNullOrEmpty(policyName)) {
+            throw new ConfigurationException("Connector policy not set for service {0}", name);
+        }
     }
 
     public String getName() {
         return name;
+    }
+
+    public void initialiseConnector(ConnectorPolicy policy) {
+        connector = policy.newConnector(this);
     }
 
     public Map<String, String> getConfiguration() {
@@ -39,6 +45,10 @@ public class Service {
 
     public Endpoint getListeningEndpoint() {
         return endpoint;
+    }
+
+    public String getConnectorPolicyName() {
+        return policyName;
     }
 
     public Connector getConnector() {

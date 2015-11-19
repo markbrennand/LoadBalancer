@@ -7,9 +7,14 @@ import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.channels.SocketChannel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Endpoint {
+    private final static Logger logger = LoggerFactory.getLogger(Endpoint.class);
+
     private InetSocketAddress address;
 
     public Endpoint(int port) {
@@ -26,6 +31,7 @@ public class Endpoint {
         SocketChannel channel = SocketChannel.open();
         channel.configureBlocking(false);
         channel.connect(address);
+        logger.info("Connecting to {}, connection established: {}", address, channel.isConnected());
         return channel;
     }
 

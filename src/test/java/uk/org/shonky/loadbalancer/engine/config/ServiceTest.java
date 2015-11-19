@@ -21,7 +21,7 @@ public class ServiceTest {
         props.put("TEST2.service.listen.address", "7002");
         props.put("TEST2.service.forward.addresses", "localhost:4, localhost:5, localhost:6");
 
-        Service service = new Service("TEST", new PropertiesConfiguration(props), policy);
+        Service service = new Service("TEST", new PropertiesConfiguration(props));
         Endpoint endpoint = service.getListeningEndpoint();
 
         assertEquals("TEST", service.getName());
@@ -55,7 +55,7 @@ public class ServiceTest {
         props.put("TEST2.service.listen.address", "localhost:7002");
         props.put("TEST2.service.forward.addresses", "localhost:4, localhost:5, localhost:6");
 
-        Service service = new Service("TEST", new PropertiesConfiguration(props), policy);
+        Service service = new Service("TEST", new PropertiesConfiguration(props));
         Endpoint endpoint = service.getListeningEndpoint();
 
         assertEquals("TEST", service.getName());
@@ -89,7 +89,7 @@ public class ServiceTest {
             props.put("TEST2.service.listen.address", "localhost:7002");
             props.put("TEST2.service.forward.addresses", "localhost:4, localhost:5, localhost:6");
 
-            Service service = new Service("TEST", new PropertiesConfiguration(props), policy);
+            Service service = new Service("TEST", new PropertiesConfiguration(props));
             fail();
         } catch(ConfigurationException ce) {
         }

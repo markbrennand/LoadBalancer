@@ -13,11 +13,6 @@ import uk.org.shonky.loadbalancer.engine.net.Listener;
 import uk.org.shonky.loadbalancer.util.impl.SimpleByteBufferAllocator;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
 
-import static java.nio.channels.SelectionKey.OP_ACCEPT;
-import static java.nio.channels.SelectionKey.OP_CONNECT;
-import static java.nio.channels.SelectionKey.OP_READ;
-import static java.nio.channels.SelectionKey.OP_WRITE;
-
 @SpringBootApplication
 @ComponentScan(value = { "uk.org.shonky.loadbalancer" })
 public class DevelopmentTest {
