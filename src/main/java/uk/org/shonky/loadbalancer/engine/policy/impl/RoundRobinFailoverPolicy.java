@@ -11,28 +11,7 @@ import uk.org.shonky.loadbalancer.engine.config.ConfigurationItem;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 @Component("Round Robin With Failover Policy")
-public class RoundRobinFailoverPolicy extends AbstractPolicy {
-
-    @Override
-    public ConfigurationItem[] getConfigurationItems() {
-        return new ConfigurationItem[] {
-                new ConfigurationItem(
-                        "listen.address",
-                        "Listening Address",
-                        "Address and port on which service will listen. Format is (host:)port",
-                        "string",
-                        "validateListeningAddress",
-                        false),
-                new ConfigurationItem(
-                        "forward.addresses",
-                        "Forwarding Addresses",
-                        "Address to which a forward connection will be made. Fomrat is host:port",
-                        "string",
-                        "validateForwardingAddress",
-                        true
-                )
-        };
-    }
+public class RoundRobinFailoverPolicy extends RoundRobinPolicy {
 
     @Override
     public Connector newConnector(Service service) {

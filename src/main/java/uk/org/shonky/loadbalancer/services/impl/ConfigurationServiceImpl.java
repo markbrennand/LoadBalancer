@@ -3,14 +3,13 @@ package uk.org.shonky.loadbalancer.services.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Repository;
 
 import uk.org.shonky.loadbalancer.dao.ConfigurationDAO;
 import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
 
-@Repository("ConfigurationService")
+@org.springframework.stereotype.Service("ConfigurationService")
 public class ConfigurationServiceImpl implements ConfigurationService {
     @Autowired
     private ConfigurationDAO configDAO;

@@ -26,7 +26,7 @@ public class RoundRobinPolicy extends AbstractPolicy {
                 new ConfigurationItem(
                         "forward.addresses",
                         "Forwarding Addresses",
-                        "Address to which a forward connection will be made. Fomrat is host:port",
+                        "Address to which a forward connection will be made. Format is host:port",
                         "string",
                         "validateForwardingAddress",
                         true
