@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import uk.org.shonky.loadbalancer.dao.MonitoringDAO;
 import uk.org.shonky.loadbalancer.engine.ProcessorThread;
-import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.net.Listener;
 import uk.org.shonky.loadbalancer.util.impl.SimpleByteBufferAllocator;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
@@ -30,9 +30,9 @@ public class DevelopmentTest {
         ProcessorThread processor = new ProcessorThread();
         monitoringDAO.addProcessorThread(processor);
 
-        List<Service> services = configService.getServices();
-        for (Service service : services) {
-            Listener listener = new Listener(service, 16, new SimpleByteBufferAllocator());
+        List<Forwarder> forwarders = configService.getForwarders();
+        for (Forwarder forwarder : forwarders) {
+            Listener listener = new Listener(forwarder, 16, new SimpleByteBufferAllocator());
             processor.addListener(listener);
         }
 

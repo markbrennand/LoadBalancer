@@ -17,48 +17,48 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:/applicationContext.xml" })
-public class ServiceTest {
+public class ForwarderTest {
     @Autowired
     private ConfigurationService configurationService;
 
     @Test
     public void testAllInterfaces() {
         Properties props = new Properties();
-        props.put("TEST.service.listen.address", "7001");
-        props.put("TEST.service.forward.addresses", "localhost:1, localhost:2, localhost:3");
-        props.put("TEST.service.expiry", "1000");
-        props.put("TEST.service.connector.policy", "Round Robin Policy");
-        props.put("TEST2.service.listen.address", "7002");
-        props.put("TEST2.service.forward.addresses", "localhost:4, localhost:5, localhost:6");
-        props.put("TEST2.service.connector.policy", "Round Robin Policy");
+        props.put("TEST.forwarder.listen.address", "7001");
+        props.put("TEST.forwarder.forward.addresses", "localhost:1, localhost:2, localhost:3");
+        props.put("TEST.forwarder.expiry", "1000");
+        props.put("TEST.forwarder.connector.policy", "Round Robin Policy");
+        props.put("TEST2.forwarder.listen.address", "7002");
+        props.put("TEST2.forwarder.forward.addresses", "localhost:4, localhost:5, localhost:6");
+        props.put("TEST2.forwarder.connector.policy", "Round Robin Policy");
 
-        Service service = new Service("TEST", new PropertiesConfiguration(props));
-        service.initialiseConnector(configurationService.getConnectorPolicy(service.getConnectorPolicyName()));
-        Endpoint endpoint = service.getListeningEndpoint();
+        Forwarder forwarder = new Forwarder("TEST", new PropertiesConfiguration(props));
+        forwarder.initialiseConnector(configurationService.getConnectorPolicy(forwarder.getConnectorPolicyName()));
+        Endpoint endpoint = forwarder.getListeningEndpoint();
 
-        assertEquals("TEST", service.getName());
+        assertEquals("TEST", forwarder.getName());
         assertEquals("0.0.0.0", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(7001, ((InetSocketAddress) endpoint.getAddress()).getPort());
 
-        Endpoints endpoints = service.getConnector().nextConnectionEndpoints();
+        Endpoints endpoints = forwarder.getConnector().nextConnectionEndpoints();
         endpoint = endpoints.next();
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(1, ((InetSocketAddress) endpoint.getAddress()).getPort());
         assertNull(endpoints.next());
 
-        endpoints = service.getConnector().nextConnectionEndpoints();
+        endpoints = forwarder.getConnector().nextConnectionEndpoints();
         endpoint = endpoints.next();
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(2, ((InetSocketAddress) endpoint.getAddress()).getPort());
         assertNull(endpoints.next());
 
-        endpoints = service.getConnector().nextConnectionEndpoints();
+        endpoints = forwarder.getConnector().nextConnectionEndpoints();
         endpoint = endpoints.next();
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(3, ((InetSocketAddress) endpoint.getAddress()).getPort());
         assertNull(endpoints.next());
 
-        endpoints = service.getConnector().nextConnectionEndpoints();
+        endpoints = forwarder.getConnector().nextConnectionEndpoints();
         endpoint = endpoints.next();
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(1, ((InetSocketAddress) endpoint.getAddress()).getPort());
@@ -68,41 +68,41 @@ public class ServiceTest {
     @Test
     public void testSpecificInterface() {
         Properties props = new Properties();
-        props.put("TEST.service.listen.address", "localhost:7001");
-        props.put("TEST.service.forward.addresses", "localhost:1, localhost:2, localhost:3");
-        props.put("TEST.service.expiry", "1000");
-        props.put("TEST.service.connector.policy", "Round Robin Policy");
-        props.put("TEST2.service.listen.address", "localhost:7002");
-        props.put("TEST2.service.forward.addresses", "localhost:4, localhost:5, localhost:6");
-        props.put("TEST2.service.connector.policy", "Round Robin Policy");
+        props.put("TEST.forwarder.listen.address", "localhost:7001");
+        props.put("TEST.forwarder.forward.addresses", "localhost:1, localhost:2, localhost:3");
+        props.put("TEST.forwarder.expiry", "1000");
+        props.put("TEST.forwarder.connector.policy", "Round Robin Policy");
+        props.put("TEST2.forwarder.listen.address", "localhost:7002");
+        props.put("TEST2.forwarder.forward.addresses", "localhost:4, localhost:5, localhost:6");
+        props.put("TEST2.forwarder.connector.policy", "Round Robin Policy");
 
-        Service service = new Service("TEST", new PropertiesConfiguration(props));
-        service.initialiseConnector(configurationService.getConnectorPolicy(service.getConnectorPolicyName()));
-        Endpoint endpoint = service.getListeningEndpoint();
+        Forwarder forwarder = new Forwarder("TEST", new PropertiesConfiguration(props));
+        forwarder.initialiseConnector(configurationService.getConnectorPolicy(forwarder.getConnectorPolicyName()));
+        Endpoint endpoint = forwarder.getListeningEndpoint();
 
-        assertEquals("TEST", service.getName());
+        assertEquals("TEST", forwarder.getName());
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(7001, ((InetSocketAddress) endpoint.getAddress()).getPort());
 
-        Endpoints endpoints = service.getConnector().nextConnectionEndpoints();
+        Endpoints endpoints = forwarder.getConnector().nextConnectionEndpoints();
         endpoint = endpoints.next();
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(1, ((InetSocketAddress) endpoint.getAddress()).getPort());
         assertNull(endpoints.next());
 
-        endpoints = service.getConnector().nextConnectionEndpoints();
+        endpoints = forwarder.getConnector().nextConnectionEndpoints();
         endpoint = endpoints.next();
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(2, ((InetSocketAddress) endpoint.getAddress()).getPort());
         assertNull(endpoints.next());
 
-        endpoints = service.getConnector().nextConnectionEndpoints();
+        endpoints = forwarder.getConnector().nextConnectionEndpoints();
         endpoint = endpoints.next();
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(3, ((InetSocketAddress) endpoint.getAddress()).getPort());
         assertNull(endpoints.next());
 
-        endpoints = service.getConnector().nextConnectionEndpoints();
+        endpoints = forwarder.getConnector().nextConnectionEndpoints();
         endpoint = endpoints.next();
         assertEquals("localhost", ((InetSocketAddress) endpoint.getAddress()).getHostName());
         assertEquals(1, ((InetSocketAddress) endpoint.getAddress()).getPort());
@@ -114,12 +114,12 @@ public class ServiceTest {
         try {
             ConnectorPolicy policy = new RoundRobinPolicy();
             Properties props = new Properties();
-            props.put("TEST.service.not.listen.address", "localhost:7001");
-            props.put("TEST.service.forward.addresses", "localhost:1, localhost:2, localhost:3");
-            props.put("TEST2.service.listen.address", "localhost:7002");
-            props.put("TEST2.service.forward.addresses", "localhost:4, localhost:5, localhost:6");
+            props.put("TEST.forwarder.not.listen.address", "localhost:7001");
+            props.put("TEST.forwarder.forward.addresses", "localhost:1, localhost:2, localhost:3");
+            props.put("TEST2.forwarder.listen.address", "localhost:7002");
+            props.put("TEST2.forwarder.forward.addresses", "localhost:4, localhost:5, localhost:6");
 
-            Service service = new Service("TEST", new PropertiesConfiguration(props));
+            Forwarder forwarder = new Forwarder("TEST", new PropertiesConfiguration(props));
             fail();
         } catch(ConfigurationException ce) {
         }

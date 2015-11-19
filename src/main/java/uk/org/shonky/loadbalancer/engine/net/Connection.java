@@ -9,11 +9,11 @@ import java.nio.channels.SocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.util.Allocator;
 import uk.org.shonky.loadbalancer.util.DeliveryQueue;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 import uk.org.shonky.loadbalancer.engine.config.Endpoints;
-import uk.org.shonky.loadbalancer.engine.config.Service;
 
 import static java.nio.channels.SelectionKey.OP_READ;
 import static java.nio.channels.SelectionKey.OP_WRITE;
@@ -24,7 +24,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class Connection implements Processor {
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
-    private Service service;
+    private Forwarder forwarder;
     private Selector selector;
     private Session session;
     private boolean source;
@@ -37,11 +37,11 @@ public class Connection implements Processor {
     private boolean closing;
     private boolean closed;
 
-    public Connection(Service service, Session session, Selector selector, SocketChannel channel, int maxQueueSize,
+    public Connection(Forwarder forwarder, Session session, Selector selector, SocketChannel channel, int maxQueueSize,
                       Allocator<ByteBuffer> allocator)
             throws IOException
     {
-        this.service = checkNotNull(service);
+        this.forwarder = checkNotNull(forwarder);
         this.session = checkNotNull(session);
         this.selector = checkNotNull(selector);
         this.channel = checkNotNull(channel);
@@ -54,14 +54,14 @@ public class Connection implements Processor {
         logger.info("{} source connection registered with selector {}", getId(), selector);
     }
 
-    public Connection(Service service, Session session, Selector selector, int maxQueueSize,
+    public Connection(Forwarder forwarder, Session session, Selector selector, int maxQueueSize,
                       Allocator<ByteBuffer> allocator)
             throws IOException
     {
-        this.service = checkNotNull(service);
+        this.forwarder = checkNotNull(forwarder);
         this.session = checkNotNull(session);
         this.selector = checkNotNull(selector);
-        this.endpoints = service.getConnector().nextConnectionEndpoints();
+        this.endpoints = forwarder.getConnector().nextConnectionEndpoints();
         this.endpoint = endpoints.next();
         this.channel = this.endpoint.connect();
         this.allocator = checkNotNull(allocator);
@@ -106,7 +106,7 @@ public class Connection implements Processor {
 
     @Override
     public String getId() {
-        return new StringBuffer(service.getName()).
+        return new StringBuffer(forwarder.getName()).
                 append("[").
                 append(session.getSourceEndpoint()).
                 append(source ? " -> " : " <- ").
@@ -182,7 +182,7 @@ public class Connection implements Processor {
 
         try {
             channel.finishConnect();
-            service.getConnector().endpointConnected(endpoint);
+            forwarder.getConnector().endpointConnected(endpoint);
             key.interestOps(OP_READ);
             logger.info("{} connected", getId());
         } catch(IOException ioe) {

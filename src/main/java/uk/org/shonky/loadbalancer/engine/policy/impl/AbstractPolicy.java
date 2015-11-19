@@ -1,12 +1,11 @@
 package uk.org.shonky.loadbalancer.engine.policy.impl;
 
-import java.util.Map;
 import java.util.List;
 import java.lang.annotation.Annotation;
 
 import org.springframework.stereotype.Component;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
-import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.config.ConfigurationException;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 import uk.org.shonky.loadbalancer.engine.policy.PolicyException;
@@ -36,16 +35,16 @@ public abstract class AbstractPolicy implements ConnectorPolicy {
         return name;
     }
 
-    protected long getExpiry(Service service) {
-        String value = service.getConfiguration().get("expiry");
+    protected long getExpiry(Forwarder forwarder) {
+        String value = forwarder.getConfiguration().get("expiry");
         if (isNullOrEmpty(value)) {
-            throw new ConfigurationException("Service {0} has no expiry definition", service.getName());
+            throw new ConfigurationException("Forwarder {0} has no expiry definition", forwarder.getName());
         }
 
         try {
             return Long.parseLong(value);
         } catch(NumberFormatException nfe) {
-            throw new ConfigurationException("Service {0} has non numeric expiry", service.getName());
+            throw new ConfigurationException("Forwarder {0} has non numeric expiry", forwarder.getName());
         }
     }
 

@@ -3,7 +3,7 @@ package uk.org.shonky.loadbalancer.engine.policy.impl;
 import org.springframework.stereotype.Component;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 import uk.org.shonky.loadbalancer.engine.config.Endpoints;
-import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 import uk.org.shonky.loadbalancer.engine.policy.PolicyException;
 import uk.org.shonky.loadbalancer.engine.config.ConfigurationItem;
@@ -35,13 +35,13 @@ public class RoundRobinPolicy extends AbstractPolicy {
     }
 
     @Override
-    public Connector newConnector(Service service) {
-        String addresses = service.getConfiguration().get("forward.addresses");
+    public Connector newConnector(Forwarder forwarder) {
+        String addresses = forwarder.getConfiguration().get("forward.addresses");
         if (isNullOrEmpty(addresses)) {
-            throw new PolicyException("Service {0} has no forwarding addresses'", service.getName());
+            throw new PolicyException("Forwarder {0} has no forwarding addresses'", forwarder.getName());
         }
 
-        return new RoundRobinConnector(parseEndpointList(addresses), getExpiry(service));
+        return new RoundRobinConnector(parseEndpointList(addresses), getExpiry(forwarder));
     }
 
     private static class RoundRobinConnector implements Connector {

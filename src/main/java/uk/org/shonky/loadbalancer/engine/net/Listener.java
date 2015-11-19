@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import uk.org.shonky.loadbalancer.util.Allocator;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
-import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 
 import static java.nio.channels.SelectionKey.OP_ACCEPT;
@@ -22,7 +22,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class Listener implements Processor {
     private static final Logger logger = LoggerFactory.getLogger(Listener.class);
 
-    private Service service;
+    private Forwarder forwarder;
     private ServerSocketChannel channel;
     private Endpoint endpoint;
     private Connector connector;
@@ -30,13 +30,13 @@ public class Listener implements Processor {
     private SelectionKey key;
     private int maxQueueSize;
 
-    public Listener(Service service, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
-        this.service = checkNotNull(service);
-        logger.info("Creating listener for {}", service.getListeningEndpoint());
-        this.connector = checkNotNull(service.getConnector());
+    public Listener(Forwarder forwarder, int maxQueueSize,Allocator<ByteBuffer> allocator) throws IOException {
+        this.forwarder = checkNotNull(forwarder);
+        logger.info("Creating listener for {}", forwarder.getListeningEndpoint());
+        this.connector = checkNotNull(forwarder.getConnector());
         channel = ServerSocketChannel.open();
         channel.configureBlocking(false);
-        endpoint = service.getListeningEndpoint();
+        endpoint = forwarder.getListeningEndpoint();
         channel.bind(endpoint.getAddress());
         this.maxQueueSize = maxQueueSize;
         this.allocator = checkNotNull(allocator);
@@ -56,7 +56,7 @@ public class Listener implements Processor {
 
     @Override
     public String getId() {
-        return new StringBuffer(service.getName()).append(" [Listener]").toString();
+        return new StringBuffer(forwarder.getName()).append(" [Listener]").toString();
     }
 
     @Override
@@ -69,7 +69,7 @@ public class Listener implements Processor {
         if (key.isAcceptable()) {
             SocketChannel socketChannel = channel.accept();
             socketChannel.configureBlocking(false);
-            new Session(service, endpoint, socketChannel, selector, maxQueueSize, allocator);
+            new Session(forwarder, endpoint, socketChannel, selector, maxQueueSize, allocator);
         } else {
             throw new ConnectionException("Unexpected operation detected on listener");
         }

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
 
@@ -17,8 +17,8 @@ public class ConfigurationController {
     private ConfigurationService configService;
 
     @RequestMapping("/configuration/services")
-    public List<Service> services() {
-        return configService.getServices();
+    public List<Forwarder> services() {
+        return configService.getForwarders();
     }
 
     @RequestMapping("/configuration/policies")

@@ -8,14 +8,14 @@ import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class Service {
+public class Forwarder {
     private String name;
     private String policyName;
     private Map<String, String> config;
     private Endpoint endpoint;
     private Connector connector;
 
-    public Service(String name, Configuration config) {
+    public Forwarder(String name, Configuration config) {
         this.name = checkNotNull(name);
         this.config = checkNotNull(config).getConfiguration(name + ".service.");
 

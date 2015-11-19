@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.shonky.loadbalancer.dao.ConfigurationDAO;
 import uk.org.shonky.loadbalancer.engine.config.ConfigurationException;
-import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.config.PropertiesConfiguration;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 
@@ -27,7 +27,7 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 @Repository("ConfigurationDAO")
 public class PropertiesConfigurationDAOImpl implements ConfigurationDAO {
-    private List<Service> services;
+    private List<Forwarder> forwarders;
     private Map<String, ConnectorPolicy> policies;
 
     @Autowired
@@ -62,16 +62,16 @@ public class PropertiesConfigurationDAOImpl implements ConfigurationDAO {
         }
 
         PropertiesConfiguration config = new PropertiesConfiguration(properties);
-        List<Service> serviceList = newArrayList();
+        List<Forwarder> forwarderList = newArrayList();
         for (String name : getServiceNames(properties)) {
-            serviceList.add(new Service(name, config));
+            forwarderList.add(new Forwarder(name, config));
         }
-        services = copyOf(serviceList);
+        forwarders = copyOf(forwarderList);
     }
 
     @Override
-    public List<Service> getServices() {
-        return services;
+    public List<Forwarder> getForwarders() {
+        return forwarders;
     }
 
     @Override
@@ -85,8 +85,8 @@ public class PropertiesConfigurationDAOImpl implements ConfigurationDAO {
 
     @PostConstruct
     public void configure() {
-        for (Service service : services) {
-            service.initialiseConnector(policies.get(service.getConnectorPolicyName()));
+        for (Forwarder forwarder : forwarders) {
+            forwarder.initialiseConnector(policies.get(forwarder.getConnectorPolicyName()));
         }
     }
 

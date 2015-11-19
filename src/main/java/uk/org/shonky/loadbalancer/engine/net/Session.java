@@ -1,15 +1,13 @@
 package uk.org.shonky.loadbalancer.engine.net;
 
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 
 import uk.org.shonky.loadbalancer.util.Allocator;
-import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
-import uk.org.shonky.loadbalancer.engine.config.Endpoints;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -23,15 +21,15 @@ public class Session {
     private boolean endpointReleased;
     private long lastActive;
 
-    public Session(Service service, Endpoint sourceEndpoint, SocketChannel source, Selector selector, int maxQueueSize,
+    public Session(Forwarder forwarder, Endpoint sourceEndpoint, SocketChannel source, Selector selector, int maxQueueSize,
                    Allocator<ByteBuffer> allocator)
             throws IOException
     {
-        this.connector = checkNotNull(service).getConnector();
+        this.connector = checkNotNull(forwarder).getConnector();
         this.sourceEndpoint = checkNotNull(sourceEndpoint);
 
         sourceConnection = new Connection(
-                service,
+                forwarder,
                 this,
                 selector,
                 source,
@@ -39,7 +37,7 @@ public class Session {
                 allocator);
 
         destinationConnection = new Connection(
-                service,
+                forwarder,
                 this,
                 selector,
                 maxQueueSize,
