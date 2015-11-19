@@ -9,12 +9,8 @@ import uk.org.shonky.loadbalancer.engine.config.ConfigurationItem;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-@Component("RoundRobinPolicy")
+@Component("Round Robin Policy")
 public class RoundRobinPolicy extends AbstractPolicy {
-
-    public RoundRobinPolicy() {
-        super("Round Robin");
-    }
 
     @Override
     public ConfigurationItem[] getConfigurationItems() {

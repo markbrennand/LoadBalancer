@@ -8,5 +8,4 @@ import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 public interface ConfigurationDAO {
     public List<Service> getServices();
     public List<ConnectorPolicy> getConnectorPolicies();
-    public ConnectorPolicy getConnectorPolicy(String name);
 }

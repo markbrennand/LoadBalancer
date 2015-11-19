@@ -2,11 +2,14 @@ package uk.org.shonky.loadbalancer.engine.policy.impl;
 
 import java.util.Map;
 import java.util.List;
+import java.lang.annotation.Annotation;
 
+import org.springframework.stereotype.Component;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.engine.config.ConfigurationException;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
+import uk.org.shonky.loadbalancer.engine.policy.PolicyException;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -15,8 +18,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public abstract class AbstractPolicy implements ConnectorPolicy {
     private String name;
 
-    public AbstractPolicy(String name) {
-        this.name = checkNotNull(name);
+    public AbstractPolicy() {
+        for (Annotation annotation : getClass().getAnnotations()) {
+            if (annotation instanceof Component) {
+                name = ((Component) annotation).value();
+                break;
+            }
+        }
+
+        if (name == null) {
+            throw new PolicyException("Policy {} does not have a Component annotation", getClass().getName());
+        }
     }
 
     @Override

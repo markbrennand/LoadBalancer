@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import uk.org.shonky.loadbalancer.dao.ConfigurationDAO;
 import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
 
 @Repository("ConfigurationService")
@@ -24,6 +25,21 @@ public class ConfigurationServiceImpl implements ConfigurationService {
         for (Service service : configDAO.getServices()) {
             if (name.equals(service.getName())) {
                 return service;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List<ConnectorPolicy> getConnectorPolicies() {
+        return configDAO.getConnectorPolicies();
+    }
+
+    @Override
+    public ConnectorPolicy getConnectorPolicy(String name) {
+        for (ConnectorPolicy policy : configDAO.getConnectorPolicies()) {
+            if (name.equals(policy.getName())) {
+                return policy;
             }
         }
         return null;

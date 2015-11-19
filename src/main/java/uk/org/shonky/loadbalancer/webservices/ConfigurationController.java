@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import uk.org.shonky.loadbalancer.engine.config.Service;
+import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
 
 
@@ -20,4 +21,8 @@ public class ConfigurationController {
         return configService.getServices();
     }
 
+    @RequestMapping("/configuration/policies")
+    public List<ConnectorPolicy> policies() {
+        return configService.getConnectorPolicies();
+    }
 }
