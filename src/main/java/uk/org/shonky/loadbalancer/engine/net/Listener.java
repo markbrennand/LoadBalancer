@@ -69,7 +69,7 @@ public class Listener implements Processor {
         if (key.isAcceptable()) {
             SocketChannel socketChannel = channel.accept();
             socketChannel.configureBlocking(false);
-            new Session(socketChannel, service, connector, selector, maxQueueSize, allocator);
+            new Session(service, endpoint, socketChannel, selector, maxQueueSize, allocator);
         } else {
             throw new ConnectionException("Unexpected operation detected on listener");
         }

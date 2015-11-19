@@ -6,7 +6,6 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import uk.org.shonky.loadbalancer.dao.MonitoringDAO;
-import uk.org.shonky.loadbalancer.engine.ProcessorState;
 import uk.org.shonky.loadbalancer.engine.ProcessorThread;
 import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.engine.net.Listener;
@@ -14,7 +13,13 @@ import uk.org.shonky.loadbalancer.util.impl.SimpleByteBufferAllocator;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
 
 @SpringBootApplication
-@ComponentScan(value = { "uk.org.shonky.loadbalancer" })
+@ComponentScan(value = {
+        "uk.org.shonky.loadbalancer.dao.impl",
+        "uk.org.shonky.loadbalancer.services.impl",
+        "uk.org.shonky.loadbalancer.engine.policy.impl",
+        "uk.org.shonky.loadbalancer.webservices"
+})
+
 public class DevelopmentTest {
 
     public static void main(String[] args) throws Exception {

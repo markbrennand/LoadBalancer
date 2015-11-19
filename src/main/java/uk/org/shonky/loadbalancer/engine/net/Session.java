@@ -9,57 +9,39 @@ import java.nio.channels.SocketChannel;
 import uk.org.shonky.loadbalancer.util.Allocator;
 import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
+import uk.org.shonky.loadbalancer.engine.config.Endpoints;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class Session {
     private Connector connector;
-    private Endpoint endpoint;
+    private Endpoint sourceEndpoint;
+    private Endpoint destinationEndpoint;
     private Connection sourceConnection;
     private Connection destinationConnection;
     private boolean endpointReleased;
-    private long expiry;
     private long lastActive;
 
-    public Session(SocketChannel source, Service service, Connector connector, Selector selector, int maxQueueSize,
+    public Session(Service service, Endpoint sourceEndpoint, SocketChannel source, Selector selector, int maxQueueSize,
                    Allocator<ByteBuffer> allocator)
             throws IOException
     {
-        this.connector = checkNotNull(connector);
-        this.endpoint = connector.nextEndpoint();
-
-        Socket sourceSocket = source.socket();
-        SocketChannel destination = endpoint.connect();
-        Socket destinationSocket = destination.socket();
-
-        String from = new StringBuffer(sourceSocket.getInetAddress().getHostAddress()).
-                append("(").
-                append(sourceSocket.getLocalPort()).
-                append(")").
-                toString();
-
-        String to = new StringBuffer(destinationSocket.getInetAddress().getHostAddress()).
-                append("(").
-                append(destinationSocket.getPort()).
-                append(")").
-                toString();
+        this.connector = checkNotNull(service).getConnector();
+        this.sourceEndpoint = checkNotNull(sourceEndpoint);
 
         sourceConnection = new Connection(
-                new StringBuffer(service.getName()).append(" [").append(from).append(" -> ").append(to).append("]").toString(),
+                service,
                 this,
-                true,
                 selector,
-                destination,
+                source,
                 maxQueueSize,
                 allocator);
 
         destinationConnection = new Connection(
-                new StringBuffer(service.getName()).append(" [").append(from).append(" <- ").append(to).append("]").toString(),
+                service,
                 this,
-                false,
                 selector,
-                source,
                 maxQueueSize,
                 allocator);
 
@@ -88,15 +70,15 @@ public class Session {
         } else {
             destinationConnection.close();
         }
-        if (!endpointReleased) {
-            connector.endpointClosed(endpoint);
+        if (!endpointReleased && destinationEndpoint != null) {
+            connector.endpointDisconnected(destinationEndpoint);
             endpointReleased = true;
         }
     }
 
     public void terminate() {
-        if (!endpointReleased) {
-            connector.endpointClosed(endpoint);
+        if (!endpointReleased && destinationEndpoint != null) {
+            connector.endpointDisconnected(destinationEndpoint);
             endpointReleased = true;
         }
         sourceConnection.kill();
@@ -109,5 +91,17 @@ public class Session {
 
     public long expiry() {
         return lastActive + connector.getExpiry();
+    }
+
+    public Endpoint getSourceEndpoint() {
+        return sourceEndpoint;
+    }
+
+    public Endpoint getDestinationEndpoint() {
+        return destinationEndpoint;
+    }
+
+    public void setDestinationEndpoint(Endpoint destinationEndpoint) {
+        this.destinationEndpoint = checkNotNull(destinationEndpoint);
     }
 }

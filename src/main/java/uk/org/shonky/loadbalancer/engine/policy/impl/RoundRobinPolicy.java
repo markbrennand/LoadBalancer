@@ -2,6 +2,7 @@ package uk.org.shonky.loadbalancer.engine.policy.impl;
 
 import org.springframework.stereotype.Component;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
+import uk.org.shonky.loadbalancer.engine.config.Endpoints;
 import uk.org.shonky.loadbalancer.engine.config.Service;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
 import uk.org.shonky.loadbalancer.engine.policy.PolicyException;
@@ -56,15 +57,21 @@ public class RoundRobinPolicy extends AbstractPolicy {
         }
 
         @Override
-        public synchronized Endpoint nextEndpoint() {
+        public synchronized Endpoints nextConnectionEndpoints() {
             if (current == max) {
                 current = 0;
             }
-            return endpoints[current++];
+            Endpoints nextEndpoints =  new Endpoints(endpoints, current, current);
+            current++;
+            return nextEndpoints;
         }
 
         @Override
-        public void endpointClosed(Endpoint endpoint) {
+        public void endpointConnected(Endpoint endpoint) {
+        }
+
+        @Override
+        public void endpointDisconnected(Endpoint endpoint) {
         }
 
         @Override

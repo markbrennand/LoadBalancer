@@ -31,7 +31,6 @@ public class Endpoint {
         SocketChannel channel = SocketChannel.open();
         channel.configureBlocking(false);
         channel.connect(address);
-        logger.info("Connecting to {}, connection established: {}", address, channel.isConnected());
         return channel;
     }
 
