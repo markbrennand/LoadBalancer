@@ -24,13 +24,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class Connection implements Processor {
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
+    private Service service;
+    private Selector selector;
     private Session session;
     private boolean source;
     private DeliveryQueue<ByteBuffer> queue;
     private Allocator<ByteBuffer> allocator;
     private SocketChannel channel;
     private SelectionKey key;
-    private Service service;
     private Endpoints endpoints;
     private Endpoint endpoint;
     private boolean closing;
@@ -42,6 +43,7 @@ public class Connection implements Processor {
     {
         this.service = checkNotNull(service);
         this.session = checkNotNull(session);
+        this.selector = checkNotNull(selector);
         this.channel = checkNotNull(channel);
         this.allocator = checkNotNull(allocator);
         this.queue = new DeliveryQueue<ByteBuffer>(maxQueueSize);
@@ -58,6 +60,7 @@ public class Connection implements Processor {
     {
         this.service = checkNotNull(service);
         this.session = checkNotNull(session);
+        this.selector = checkNotNull(selector);
         this.endpoints = service.getConnector().nextConnectionEndpoints();
         this.endpoint = endpoints.next();
         this.channel = this.endpoint.connect();
@@ -188,8 +191,11 @@ public class Connection implements Processor {
                 logger.info("{} connect failed, no more endpoints to try", getId(), endpoint);
                 throw ioe;
             } else {
+                key.cancel();
+                channel.close();
+                channel = endpoint.connect();
+                this.key = channel.register(selector, OP_CONNECT, this);
                 logger.info("{} connect failed, trying {}", getId(), endpoint);
-                channel.connect(endpoint.getAddress());
             }
         }
     }
