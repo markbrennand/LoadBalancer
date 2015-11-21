@@ -4,20 +4,16 @@ import java.util.Properties;
 import java.net.InetSocketAddress;
 
 import org.junit.*;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import uk.org.shonky.loadbalancer.util.test.SpringTestBase;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 import uk.org.shonky.loadbalancer.engine.policy.impl.RoundRobinPolicy;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
 
 import static org.junit.Assert.*;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:/applicationContext.xml" })
-public class ForwarderTest {
+public class ForwarderTest extends SpringTestBase {
     @Autowired
     private ConfigurationService configurationService;
 

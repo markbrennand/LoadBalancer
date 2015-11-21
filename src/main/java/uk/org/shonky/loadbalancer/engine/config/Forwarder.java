@@ -17,17 +17,17 @@ public class Forwarder {
 
     public Forwarder(String name, Configuration config) {
         this.name = checkNotNull(name);
-        this.config = checkNotNull(config).getConfiguration(name + ".service.");
+        this.config = checkNotNull(config).getConfiguration(name + ".forwarder.");
 
         String address = this.config.get("listen.address");
         if (isNullOrEmpty(address)) {
-            throw new ConfigurationException("Listening address not set for service {0}", name);
+            throw new ConfigurationException("Listening address not set for forwarder {0}", name);
         }
-        endpoint =  Endpoint.parse(address, true);
+        this.endpoint = Endpoint.parse(address, true);
 
         policyName = this.config.get("connector.policy");
         if (isNullOrEmpty(policyName)) {
-            throw new ConfigurationException("Connector policy not set for service {0}", name);
+            throw new ConfigurationException("Connector policy not set for forwarder {0}", name);
         }
     }
 

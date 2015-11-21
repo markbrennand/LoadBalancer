@@ -26,7 +26,7 @@ public abstract class AbstractPolicy implements ConnectorPolicy {
         }
 
         if (name == null) {
-            throw new PolicyException("Policy {} does not have a Component annotation", getClass().getName());
+            throw new PolicyException("Policy {0} does not have a Component annotation", getClass().getName());
         }
     }
 
