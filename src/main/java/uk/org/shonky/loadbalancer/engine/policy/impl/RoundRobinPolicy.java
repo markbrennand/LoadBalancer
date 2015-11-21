@@ -10,7 +10,7 @@ import uk.org.shonky.loadbalancer.engine.config.ConfigurationItem;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-@Component("Round Robin Policy")
+@Component("RoundRobin")
 public class RoundRobinPolicy extends AbstractPolicy {
 
     @Override

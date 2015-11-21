@@ -9,7 +9,7 @@ import uk.org.shonky.loadbalancer.engine.policy.PolicyException;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
-@Component("Round Robin With Failover Policy")
+@Component("RoundRobinWithFailover")
 public class RoundRobinFailoverPolicy extends RoundRobinPolicy {
 
     @Override
