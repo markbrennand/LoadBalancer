@@ -5,7 +5,6 @@ import java.util.List;
 import java.lang.annotation.Annotation;
 
 import org.springframework.stereotype.Service;
-import org.springframework.stereotype.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.org.shonky.loadbalancer.dao.ConfigurationDAO;
@@ -16,6 +15,7 @@ import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 import uk.org.shonky.loadbalancer.services.ConfigurationService;
 
 import static com.google.common.collect.Maps.newHashMap;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Service("ConfigurationService")
 public class ConfigurationServiceImpl implements ConfigurationService {
@@ -35,7 +35,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
                     }
                 }
             }
-            configDaoMap.put(configDao.getName(), configDao);
+            configDaoMap.put(dao.getName(), dao);
         }
         if (configDao == null) {
             throw new ConfigurationException("No defaut implementation found for Configuration DAO");
@@ -70,5 +70,13 @@ public class ConfigurationServiceImpl implements ConfigurationService {
             }
         }
         return null;
+    }
+
+    @Override
+    public void setConfigurationDAO(String name) {
+        configDao = configDaoMap.get(checkNotNull(name));
+        if (configDao == null) {
+            throw new ConfigurationException("Configuration DAO named {0} does not exist", name);
+        }
     }
 }

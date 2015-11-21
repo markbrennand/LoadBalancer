@@ -10,4 +10,5 @@ public interface ConfigurationService {
     public Forwarder getForwarder(String name);
     public List<ConnectorPolicy> getConnectorPolicies();
     public ConnectorPolicy getConnectorPolicy(String name);
+    public void setConfigurationDAO(String name);
 }

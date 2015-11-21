@@ -8,19 +8,16 @@ import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.Properties;
-import java.lang.annotation.Annotation;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import uk.org.shonky.loadbalancer.dao.ConfigurationDAO;
 import uk.org.shonky.loadbalancer.util.DefaultImplementation;
 import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.config.ConfigurationException;
 import uk.org.shonky.loadbalancer.engine.config.PropertiesConfiguration;
 import uk.org.shonky.loadbalancer.engine.policy.ConnectorPolicy;
 
-import static com.google.common.collect.Maps.newHashMap;
 import static com.google.common.collect.Sets.newHashSet;
 import static com.google.common.collect.Lists.newArrayList;
 import static com.google.common.collect.ImmutableList.copyOf;
@@ -28,34 +25,14 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 @DefaultImplementation
 @Repository("Properties Configuration")
-public class PropertiesConfigurationDAOImpl implements ConfigurationDAO {
+public class PropertiesConfigurationDAOImpl extends AbstractConfigurationDAO {
     private final static String CONFIG_FILENAME = "LoadBalancer.properties";
 
-    private String name;
     private List<Forwarder> forwarders;
-    private Map<String, ConnectorPolicy> policies;
 
     @Autowired
     public PropertiesConfigurationDAOImpl(List<ConnectorPolicy> policies) {
-        this.policies = newHashMap();
-        for (ConnectorPolicy policy : policies) {
-            this.policies.put(policy.getName(), policy);
-        }
-
-        for (Annotation annotation : getClass().getAnnotations()) {
-            if (annotation instanceof Repository) {
-                name = ((Repository) annotation).value();
-            }
-        }
-
-        if (name == null) {
-            throw new ConfigurationException("Properties configuration is missing Repository annotation");
-        }
-    }
-
-    @Override
-    public String getName() {
-        return name;
+        super(policies);
     }
 
     @Override
@@ -64,15 +41,6 @@ public class PropertiesConfigurationDAOImpl implements ConfigurationDAO {
             load();
         }
         return forwarders;
-    }
-
-    @Override
-    public List<ConnectorPolicy> getConnectorPolicies() {
-        List<ConnectorPolicy> retList = newArrayList();
-        for (ConnectorPolicy policy : policies.values()) {
-            retList.add(policy);
-        }
-        return copyOf(retList);
     }
 
     private void load() {
