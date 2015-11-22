@@ -33,10 +33,10 @@ public abstract class SpringTestBase {
 
     @Before
     public void initialise() {
-        configurationService.setConfigurationDAO("Test Configuration");
+        configurationService.setConfigurationDAO("TestConfiguration");
     }
 
-    @Repository("Test Configuration")
+    @Repository("TestConfiguration")
     private static class TestConfigurationDAO extends AbstractConfigurationDAO {
         private List<Forwarder> forwarders;
 

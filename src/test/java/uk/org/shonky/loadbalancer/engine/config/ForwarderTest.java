@@ -23,7 +23,7 @@ public class ForwarderTest extends SpringTestBase {
         props.put("TEST.forwarder.listen.address", "7001");
         props.put("TEST.forwarder.forward.addresses", "localhost:1, localhost:2, localhost:3");
         props.put("TEST.forwarder.expiry", "1000");
-        props.put("TEST.forwarder.connector.policy", "Round Robin Policy");
+        props.put("TEST.forwarder.connector.policy", "RoundRobin");
         props.put("TEST2.forwarder.listen.address", "7002");
         props.put("TEST2.forwarder.forward.addresses", "localhost:4, localhost:5, localhost:6");
         props.put("TEST2.forwarder.connector.policy", "Round Robin Policy");
@@ -67,7 +67,7 @@ public class ForwarderTest extends SpringTestBase {
         props.put("TEST.forwarder.listen.address", "localhost:7001");
         props.put("TEST.forwarder.forward.addresses", "localhost:1, localhost:2, localhost:3");
         props.put("TEST.forwarder.expiry", "1000");
-        props.put("TEST.forwarder.connector.policy", "Round Robin Policy");
+        props.put("TEST.forwarder.connector.policy", "RoundRobin");
         props.put("TEST2.forwarder.listen.address", "localhost:7002");
         props.put("TEST2.forwarder.forward.addresses", "localhost:4, localhost:5, localhost:6");
         props.put("TEST2.forwarder.connector.policy", "Round Robin Policy");

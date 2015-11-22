@@ -16,7 +16,7 @@ public class ConfigurationController {
     @Autowired
     private ConfigurationService configService;
 
-    @RequestMapping("/configuration/services")
+    @RequestMapping("/configuration/forwarders")
     public List<Forwarder> services() {
         return configService.getForwarders();
     }

@@ -1,6 +1,9 @@
 package uk.org.shonky.loadbalancer.engine.policy.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 import uk.org.shonky.loadbalancer.engine.config.Endpoints;
 import uk.org.shonky.loadbalancer.engine.config.Forwarder;
@@ -45,6 +48,8 @@ public class RoundRobinPolicy extends AbstractPolicy {
     }
 
     private static class RoundRobinConnector implements Connector {
+        private static final Logger logger = LoggerFactory.getLogger(RoundRobinConnector.class);
+
         private Endpoint[] endpoints;
         private int max;
         private int current;
@@ -68,10 +73,12 @@ public class RoundRobinPolicy extends AbstractPolicy {
 
         @Override
         public void endpointConnected(Endpoint endpoint) {
+            logger.info("Endpoint {} connected", endpoint);
         }
 
         @Override
         public void endpointDisconnected(Endpoint endpoint) {
+            logger.info("Endpoint {} disconnected");
         }
 
         @Override

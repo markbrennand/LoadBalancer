@@ -24,7 +24,7 @@ import static com.google.common.collect.ImmutableList.copyOf;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 @DefaultImplementation
-@Repository("Properties Configuration")
+@Repository("PropertiesConfiguration")
 public class PropertiesConfigurationDAOImpl extends AbstractConfigurationDAO {
     private final static String CONFIG_FILENAME = "LoadBalancer.properties";
 
