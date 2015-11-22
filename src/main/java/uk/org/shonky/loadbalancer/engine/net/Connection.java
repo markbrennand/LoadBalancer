@@ -34,6 +34,7 @@ public class Connection implements Processor {
     private SelectionKey key;
     private Endpoints endpoints;
     private Endpoint endpoint;
+    private boolean connected;
     private boolean closing;
     private boolean closed;
 
@@ -48,7 +49,8 @@ public class Connection implements Processor {
         this.allocator = checkNotNull(allocator);
         this.queue = new DeliveryQueue<ByteBuffer>(maxQueueSize);
         this.key = this.channel.register(selector, OP_READ, this);
-        this.source = true;
+        this.source =
+        this.connected = true;
         session.active();
 
         logger.info("{} source connection registered with selector {}", getId(), selector);
@@ -61,17 +63,17 @@ public class Connection implements Processor {
         this.forwarder = checkNotNull(forwarder);
         this.session = checkNotNull(session);
         this.selector = checkNotNull(selector);
+        this.allocator = checkNotNull(allocator);
         this.endpoints = forwarder.getConnector().nextConnectionEndpoints();
         this.endpoint = endpoints.next();
         this.channel = this.endpoint.connect();
-        this.allocator = checkNotNull(allocator);
         this.queue = new DeliveryQueue<ByteBuffer>(maxQueueSize);
         this.key = this.channel.register(selector, OP_CONNECT, this);
         session.setDestinationEndpoint(endpoint);
-        this.source = false;
+        this.source =
+        this.connected = false;
 
-        logger.info("{} connection initiated", getId());
-        logger.info("{} registered with selector {}", getId(), selector);
+        logger.info("{} connection initiated, registered with selector {}", getId(), selector);
     }
 
     public void append(ByteBuffer buffer) {
@@ -87,7 +89,7 @@ public class Connection implements Processor {
         }
 
         if (enabled) {
-            key.interestOps(key.interestOps() | OP_READ);
+            key.interestOps((key.interestOps() | OP_READ) & (OP_READ | OP_WRITE));
         } else {
             key.interestOps(key.interestOps() & OP_WRITE);
         }
@@ -108,9 +110,9 @@ public class Connection implements Processor {
     public String getId() {
         return new StringBuffer(forwarder.getName()).
                 append("[").
-                append(session.getSourceEndpoint()).
-                append(source ? " -> " : " <- ").
-                append(session.getDestinationEndpoint()).
+                append(source ? session.getSourceEndpoint() : session.getDestinationEndpoint()).
+                append(" -> ").
+                append(source ? session.getDestinationEndpoint() : session.getSourceEndpoint()).
                 append("]").
                 toString();
     }
@@ -138,6 +140,10 @@ public class Connection implements Processor {
     @Override
     public void terminate() {
         session.terminate();
+    }
+
+    public boolean isConnected() {
+        return connected;
     }
 
     public void kill() {
@@ -183,12 +189,14 @@ public class Connection implements Processor {
         try {
             channel.finishConnect();
             forwarder.getConnector().endpointConnected(endpoint);
-            key.interestOps(OP_READ);
+            enableReceive(true);
+            connected = true;
             logger.info("{} connected", getId());
         } catch(IOException ioe) {
+            forwarder.getConnector().endpointUnavailable(endpoint);
             endpoint = endpoints.next();
             if (endpoint == null) {
-                logger.info("{} connect failed, no more endpoints to try", getId(), endpoint);
+                logger.info("{} connect failed, no more endpoints to try", getId());
                 throw ioe;
             } else {
                 key.cancel();

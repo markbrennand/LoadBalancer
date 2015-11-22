@@ -31,7 +31,7 @@ public class RoundRobinPolicy extends AbstractPolicy {
                         "Forwarding Addresses",
                         "Address to which a forward connection will be made. Format is host:port",
                         "string",
-                        "validateForwardingAddress",
+                        "validateForwardingAddresses",
                         true
                 )
         };
@@ -66,7 +66,7 @@ public class RoundRobinPolicy extends AbstractPolicy {
             if (current == max) {
                 current = 0;
             }
-            Endpoints nextEndpoints =  new Endpoints(endpoints, current, current);
+            Endpoints nextEndpoints = new Endpoints(endpoints, current, current);
             current++;
             return nextEndpoints;
         }
@@ -78,7 +78,12 @@ public class RoundRobinPolicy extends AbstractPolicy {
 
         @Override
         public void endpointDisconnected(Endpoint endpoint) {
-            logger.info("Endpoint {} disconnected");
+            logger.info("Endpoint {} disconnected", endpoint);
+        }
+
+        @Override
+        public void endpointUnavailable(Endpoint endpoint) {
+            logger.info("Endpoint {} unavailable", endpoint);
         }
 
         @Override

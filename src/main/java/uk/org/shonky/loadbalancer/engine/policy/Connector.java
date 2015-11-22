@@ -7,5 +7,6 @@ public interface Connector {
     public Endpoints nextConnectionEndpoints();
     public void endpointConnected(Endpoint endpoint);
     public void endpointDisconnected(Endpoint endpoint);
+    public void endpointUnavailable(Endpoint endpoint);
     public long getExpiry();
 }

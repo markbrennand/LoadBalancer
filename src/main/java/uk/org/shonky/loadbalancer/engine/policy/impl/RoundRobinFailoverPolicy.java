@@ -43,7 +43,7 @@ public class RoundRobinFailoverPolicy extends RoundRobinPolicy {
             if (current == max) {
                 current = 0;
             }
-            Endpoints nextEndpoints =  new Endpoints(endpoints, current, (current == 0) ? max-1 : current-1);
+            Endpoints nextEndpoints = new Endpoints(endpoints, current, (current == 0) ? max-1 : current-1);
             current++;
             return nextEndpoints;
         }
@@ -56,6 +56,11 @@ public class RoundRobinFailoverPolicy extends RoundRobinPolicy {
         @Override
         public void endpointDisconnected(Endpoint endpoint) {
             logger.info("Endpoint {} disconnected", endpoint);
+        }
+
+        @Override
+        public void endpointUnavailable(Endpoint endpoint) {
+            logger.info("Endpoint {} unavailable", endpoint);
         }
 
         @Override

@@ -68,14 +68,14 @@ public class Session {
         } else {
             destinationConnection.close();
         }
-        if (!endpointReleased && destinationEndpoint != null) {
+        if (!endpointReleased && destinationConnection.isConnected()) {
             connector.endpointDisconnected(destinationEndpoint);
             endpointReleased = true;
         }
     }
 
     public void terminate() {
-        if (!endpointReleased && destinationEndpoint != null) {
+        if (!endpointReleased && destinationConnection.isConnected()) {
             connector.endpointDisconnected(destinationEndpoint);
             endpointReleased = true;
         }
