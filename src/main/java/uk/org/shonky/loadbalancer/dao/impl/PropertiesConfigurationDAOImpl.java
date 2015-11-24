@@ -89,7 +89,12 @@ public class PropertiesConfigurationDAOImpl extends AbstractConfigurationDAO {
         this.forwarders = copyOf(forwarderList);
 
         for (Forwarder forwarder : forwarders) {
-            forwarder.initialiseConnector(policies.get(forwarder.getConnectorPolicyName()));
+            ConnectorPolicy policy = policies.get(forwarder.getConnectorPolicyName());
+            if (policy == null) {
+                throw new ConfigurationException("Connector policy {0} does not exist",
+                        forwarder.getConnectorPolicyName());
+            }
+            forwarder.initialiseConnector(policy);
         }
     }
 

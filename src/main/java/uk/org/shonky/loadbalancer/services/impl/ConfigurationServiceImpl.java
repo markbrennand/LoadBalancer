@@ -54,7 +54,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
                 return forwarder;
             }
         }
-        return null;
+        throw new ConfigurationException("Forwarder {0} does not exist", name);
     }
 
     @Override
