@@ -288,7 +288,12 @@ public class Connection implements Processor {
         }
 
         if (closed) {
-            return;
+            if (!queue.isEmpty()) {
+                throw new ConnectionException("Peer closed connection before buffer could be flushed");
+            } else {
+                // The processing of the READ on the channel has closed the connection.
+                return;
+            }
         }
 
         if (queue.isEmpty()) {
