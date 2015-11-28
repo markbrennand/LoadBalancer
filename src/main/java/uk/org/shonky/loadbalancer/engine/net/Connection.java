@@ -1,3 +1,6 @@
+/**
+ * (c) Mark Brennand, 2015
+ */
 package uk.org.shonky.loadbalancer.engine.net;
 
 import java.io.IOException;
@@ -9,11 +12,11 @@ import java.nio.channels.SocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.util.Allocator;
 import uk.org.shonky.loadbalancer.util.DeliveryQueue;
 import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 import uk.org.shonky.loadbalancer.engine.config.Endpoints;
+import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 
 import static java.nio.channels.SelectionKey.OP_READ;
 import static java.nio.channels.SelectionKey.OP_WRITE;
@@ -21,6 +24,19 @@ import static java.nio.channels.SelectionKey.OP_CONNECT;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+/**
+ * Provides a connection which can be managed by NIO.
+ *
+ * The owning session manages two connections. The source connection is the socket accepted from the forwarder
+ * listener. The destination connection is the forwarded socket.
+ *
+ * Data available on the connection is read and added to the write queue of the peer connection. If the session
+ * determines that the peer's write queue is full, this connection will have the NIO read operation disabled until the
+ * peer has flushed it write queue.
+ *
+ * If the connection has data available on its write queue, the owning session will enavble the NIO write operation
+ * for this connection. Once the write queue is flushed, the owning session will disable the write operation.
+ */
 public class Connection implements Processor {
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
@@ -38,6 +54,17 @@ public class Connection implements Processor {
     private boolean closing;
     private boolean closed;
 
+    /**
+     * Source connection constructor.
+     *
+     * @param forwarder forwarder associated with the connection.
+     * @param session owning session for this connection.
+     * @param selector NIO selector to be used to manage this connection.
+     * @param channel socket channel accepted by the listener.
+     * @param maxQueueSize maximum number of messages to be queued on the write queue.
+     * @param allocator allocator to be used for NIO buffers.
+     * @throws IOException an error occurred when configuring the sockat channel.
+     */
     public Connection(Forwarder forwarder, Session session, Selector selector, SocketChannel channel, int maxQueueSize,
                       Allocator<ByteBuffer> allocator)
             throws IOException
@@ -48,7 +75,7 @@ public class Connection implements Processor {
         this.channel = checkNotNull(channel);
         this.allocator = checkNotNull(allocator);
         this.queue = new DeliveryQueue<ByteBuffer>(maxQueueSize);
-        this.key = this.channel.register(selector, OP_READ, this);
+        this.key = this.channel.register(selector, 0, this);    // Disabled till the forward connection is made.
         this.source =
         this.connected = true;
         session.active();
@@ -56,6 +83,16 @@ public class Connection implements Processor {
         logger.info("{} source connection registered with selector {}", getId(), selector);
     }
 
+    /**
+     * Destination connection constructor.
+     *
+     * @param forwarder forwarder associated with the connection.
+     * @param session owning session for this connection.
+     * @param selector NIO selector to be used to manage this connection.
+     * @param maxQueueSize maximum number of messages to be queued on the write queue.
+     * @param allocator allocator to be used for NIO buffers.
+     * @throws IOException an error occurred when configuring the sockat channel.
+     */
     public Connection(Forwarder forwarder, Session session, Selector selector, int maxQueueSize,
                       Allocator<ByteBuffer> allocator)
             throws IOException
@@ -189,6 +226,7 @@ public class Connection implements Processor {
         try {
             channel.finishConnect();
             forwarder.getConnector().endpointConnected(endpoint);
+            session.enableRead(!source, true);
             enableReceive(true);
             connected = true;
             logger.info("{} connected", getId());
@@ -204,6 +242,7 @@ public class Connection implements Processor {
                 channel = endpoint.connect();
                 this.key = channel.register(selector, OP_CONNECT, this);
                 logger.info("{} connect failed, trying {}", getId(), endpoint);
+                session.setDestinationEndpoint(endpoint);
             }
         }
     }
@@ -249,7 +288,7 @@ public class Connection implements Processor {
         }
 
         if (closed) {
-            throw new ConnectionException("Connection closed");
+            return;
         }
 
         if (queue.isEmpty()) {
