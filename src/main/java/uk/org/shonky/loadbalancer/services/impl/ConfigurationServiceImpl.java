@@ -29,7 +29,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
             for (Annotation annotation : dao.getClass().getAnnotations()) {
                 if (annotation instanceof DefaultImplementation) {
                     if (configDao != null) {
-                        throw new ConfigurationException("Configuration DAO has more than one default implementation");
+                        throw new ConfigurationException("ConfigurationDaoTooManyDefaults");
                     } else {
                         configDao = dao;
                     }
@@ -38,7 +38,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
             configDaoMap.put(dao.getName(), dao);
         }
         if (configDao == null) {
-            throw new ConfigurationException("No defaut implementation found for Configuration DAO");
+            throw new ConfigurationException("ConfigurationDaoNoDefault");
         }
     }
 
@@ -54,7 +54,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
                 return forwarder;
             }
         }
-        throw new ConfigurationException("Forwarder {0} does not exist", name);
+        throw new ConfigurationException("ForwarderNotFound", name);
     }
 
     @Override
@@ -76,7 +76,7 @@ public class ConfigurationServiceImpl implements ConfigurationService {
     public void setConfigurationDAO(String name) {
         configDao = configDaoMap.get(checkNotNull(name));
         if (configDao == null) {
-            throw new ConfigurationException("Configuration DAO named {0} does not exist", name);
+            throw new ConfigurationException("ConfigurationDaoNotFound", name);
         }
     }
 }

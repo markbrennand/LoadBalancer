@@ -31,8 +31,7 @@ public abstract class AbstractConfigurationDAO implements ConfigurationDAO {
         }
 
         if (name == null) {
-            throw new ConfigurationException("Configuration implementation {0] is missing Repository annotation",
-                    getClass().getName());
+            throw new ConfigurationException("MissingConfigurationRepositoryAnnotation", getClass().getName());
         }
     }
 

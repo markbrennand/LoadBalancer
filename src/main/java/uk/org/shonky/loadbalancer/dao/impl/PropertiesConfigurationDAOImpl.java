@@ -59,7 +59,7 @@ public class PropertiesConfigurationDAOImpl extends AbstractConfigurationDAO {
                 in = new FileInputStream(configPath);
                 properties.load(in);
             } catch(IOException ioe) {
-                throw new ConfigurationException("Failed to load configuration file {0}", configPath);
+                throw new ConfigurationException("PropertiesConfigurationLoadFailed", configPath);
             } finally {
                 if (in != null) {
                     try {
@@ -71,13 +71,13 @@ public class PropertiesConfigurationDAOImpl extends AbstractConfigurationDAO {
         } else {
             InputStream in = getClass().getClassLoader().getParent().getResourceAsStream(CONFIG_FILENAME);
             if (in == null) {
-                throw new ConfigurationException("Unable to find configuration file");
+                throw new ConfigurationException("PropertiesConfigurationNotFound");
             }
 
             try {
                 properties.load(in);
             } catch(IOException ioe) {
-                throw new ConfigurationException("Failed to load configuration from resource stream");
+                throw new ConfigurationException("PropertiesConfigurationResourceLoadFailed");
             }
         }
 
@@ -91,8 +91,7 @@ public class PropertiesConfigurationDAOImpl extends AbstractConfigurationDAO {
         for (Forwarder forwarder : forwarders) {
             ConnectorPolicy policy = policies.get(forwarder.getConnectorPolicyName());
             if (policy == null) {
-                throw new ConfigurationException("Connector policy {0} does not exist",
-                        forwarder.getConnectorPolicyName());
+                throw new ConfigurationException("NoSuchConnectorPolicy", forwarder.getConnectorPolicyName());
             }
             forwarder.initialiseConnector(policy);
         }

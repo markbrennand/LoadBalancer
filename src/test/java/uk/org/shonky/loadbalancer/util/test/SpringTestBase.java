@@ -47,13 +47,13 @@ public abstract class SpringTestBase {
             Properties properties = new Properties();
             InputStream in = getClass().getClassLoader().getResourceAsStream("LoadBalancerTest.properties");
             if (in == null) {
-                throw new ConfigurationException("Unable to find test configuration file");
+                throw new ConfigurationException("PropertiesConfigurationNotFound");
             }
 
             try {
                 properties.load(in);
             } catch(IOException ioe) {
-                throw new ConfigurationException("Failed to load configuration from resource stream");
+                throw new ConfigurationException("PropertiesConfigurationResourceLoadFailed");
             }
 
             PropertiesConfiguration config = new PropertiesConfiguration(properties);

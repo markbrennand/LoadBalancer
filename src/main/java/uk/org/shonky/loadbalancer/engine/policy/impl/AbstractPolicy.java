@@ -26,7 +26,7 @@ public abstract class AbstractPolicy implements ConnectorPolicy {
         }
 
         if (name == null) {
-            throw new PolicyException("Policy {0} does not have a Component annotation", getClass().getName());
+            throw new PolicyException("PolicyMissingComponent", getClass().getName());
         }
     }
 
@@ -38,13 +38,13 @@ public abstract class AbstractPolicy implements ConnectorPolicy {
     protected long getExpiry(Forwarder forwarder) {
         String value = forwarder.getConfiguration().get("expiry");
         if (isNullOrEmpty(value)) {
-            throw new ConfigurationException("Forwarder {0} has no expiry definition", forwarder.getName());
+            throw new ConfigurationException("ForwarderHasNoExpiry", forwarder.getName());
         }
 
         try {
             return Long.parseLong(value);
         } catch(NumberFormatException nfe) {
-            throw new ConfigurationException("Forwarder {0} has non numeric expiry", forwarder.getName());
+            throw new ConfigurationException("ForwarderNonNumericExpiry", forwarder.getName());
         }
     }
 

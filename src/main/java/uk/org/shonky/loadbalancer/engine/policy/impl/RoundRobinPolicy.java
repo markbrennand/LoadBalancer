@@ -8,8 +8,8 @@ import uk.org.shonky.loadbalancer.engine.config.Endpoint;
 import uk.org.shonky.loadbalancer.engine.config.Endpoints;
 import uk.org.shonky.loadbalancer.engine.config.Forwarder;
 import uk.org.shonky.loadbalancer.engine.policy.Connector;
-import uk.org.shonky.loadbalancer.engine.policy.PolicyException;
 import uk.org.shonky.loadbalancer.engine.config.ConfigurationItem;
+import uk.org.shonky.loadbalancer.engine.config.ConfigurationException;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
 
@@ -41,7 +41,7 @@ public class RoundRobinPolicy extends AbstractPolicy {
     public Connector newConnector(Forwarder forwarder) {
         String addresses = forwarder.getConfiguration().get("forward.addresses");
         if (isNullOrEmpty(addresses)) {
-            throw new PolicyException("Forwarder {0} has no forwarding addresses'", forwarder.getName());
+            throw new ConfigurationException("ForwarderHasNoAddresses", forwarder.getName());
         }
 
         return new RoundRobinConnector(parseEndpointList(addresses), getExpiry(forwarder));

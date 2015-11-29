@@ -21,13 +21,13 @@ public class Forwarder {
 
         String address = this.config.get("listen.address");
         if (isNullOrEmpty(address)) {
-            throw new ConfigurationException("Listening address not set for forwarder {0}", name);
+            throw new ConfigurationException("ForwarderMissingListeningAddress", name);
         }
         this.endpoint = Endpoint.parse(address, true);
 
         policyName = this.config.get("connector.policy");
         if (isNullOrEmpty(policyName)) {
-            throw new ConfigurationException("Connector policy not set for forwarder {0}", name);
+            throw new ConfigurationException("ForwarderMissingConnectorPolicy", name);
         }
     }
 

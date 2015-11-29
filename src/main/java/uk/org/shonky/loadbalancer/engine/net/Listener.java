@@ -71,7 +71,7 @@ public class Listener implements Processor {
             socketChannel.configureBlocking(false);
             new Session(forwarder, endpoint, socketChannel, selector, maxQueueSize, allocator);
         } else {
-            throw new ConnectionException("Unexpected operation detected on listener");
+            throw new ConnectionException("ListenerUnexpectedOperation");
         }
     }
 

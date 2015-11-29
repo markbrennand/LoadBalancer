@@ -51,14 +51,14 @@ public class Endpoint {
             if (listeningAddress) {
                 address = null;
             } else {
-                throw new ConfigurationException("Invalid connection address ''{0}'', missing hostname / IP", value);
+                throw new ConfigurationException("InvalidEndpointAddress", value);
             }
         } else {
             address = value.substring(0, split);
         }
 
         if (split == (value.length() - 1)) {
-            throw new ConfigurationException("Invalid address ''{0}'', missing port number", value);
+            throw new ConfigurationException("InvalidEndpointMissingPort", value);
         }
 
         try {
@@ -68,15 +68,15 @@ public class Endpoint {
                 return new Endpoint(InetAddress.getByName(address), Integer.parseInt(value.substring(split + 1)));
             }
         } catch(NumberFormatException nfe) {
-            throw new ConfigurationException("Invalid address ''{0}'', non numeric port number", value);
+            throw new ConfigurationException("InvalidEndpointNonNumericPort", value);
         } catch(UnknownHostException uhe) {
-            throw new ConfigurationException("Invalid address ''{0}'', hostname not found", value);
+            throw new ConfigurationException("InvalidEndpointHostNotFound", value);
         }
     }
 
     private void validatePort(int port) {
         if (port < 1 || port > 65535) {
-            throw new ConfigurationException("Invalid port number, must be in range 1 .. 65535");
+            throw new ConfigurationException("InvalidEndpointIllegalPortNumber");
         }
     }
 }
