@@ -32,7 +32,7 @@ public class DevelopmentTest {
 
         List<Forwarder> forwarders = configService.getForwarders();
         for (Forwarder forwarder : forwarders) {
-            Listener listener = new Listener(forwarder, 16, new SimpleByteBufferAllocator());
+            Listener listener = new Listener(forwarder, 2, new SimpleByteBufferAllocator());
             processor.addListener(listener);
         }
 

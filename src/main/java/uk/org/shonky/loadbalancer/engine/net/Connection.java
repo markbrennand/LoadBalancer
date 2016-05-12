@@ -316,7 +316,7 @@ public class Connection implements Processor {
 
         logger.debug("{} queue is empty: {}", getId(), queue.isEmpty());
 
-        enableReceive(queue.hasCapacity());
+        session.enableRead(!source, queue.hasCapacity());
         enableTransmit(!queue.isEmpty() || closing);
     }
 }
